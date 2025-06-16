@@ -20,7 +20,9 @@ servers:
 proxy:
   app_port: 3000
   ssl: true
-  host: hurdb.xyz
+  hosts:
+    - hurdb.xyz
+    - www.hurdb.xyz
   ssl_redirect: true
 
 # Credentials for your image host.
