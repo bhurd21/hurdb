@@ -1,0 +1,53 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  player_id: MyString
+  birth_year: 1.5
+  birth_month: 1.5
+  birth_day: 1.5
+  birth_city: MyString
+  birth_country: MyString
+  birth_state: MyString
+  death_year: MyString
+  death_month: MyString
+  death_day: MyString
+  death_country: MyString
+  death_state: MyString
+  death_city: MyString
+  name_first: MyString
+  name_last: MyString
+  name_given: MyString
+  weight: MyString
+  height: MyString
+  bats: MyString
+  throws: MyString
+  debut: MyString
+  bbref_id: MyString
+  final_game: MyString
+  retro_id: MyString
+
+two:
+  player_id: MyString
+  birth_year: 1.5
+  birth_month: 1.5
+  birth_day: 1.5
+  birth_city: MyString
+  birth_country: MyString
+  birth_state: MyString
+  death_year: MyString
+  death_month: MyString
+  death_day: MyString
+  death_country: MyString
+  death_state: MyString
+  death_city: MyString
+  name_first: MyString
+  name_last: MyString
+  name_given: MyString
+  weight: MyString
+  height: MyString
+  bats: MyString
+  throws: MyString
+  debut: MyString
+  bbref_id: MyString
+  final_game: MyString
+  retro_id: MyString
