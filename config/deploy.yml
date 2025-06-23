@@ -21,8 +21,8 @@ proxy:
   app_port: 3000
   ssl: true
   hosts:
-    - hurdb.xyz
-    - www.hurdb.xyz
+    - brennanhurd.com
+    - www.brennanhurd.com
   ssl_redirect: true
 
 # Credentials for your image host.
