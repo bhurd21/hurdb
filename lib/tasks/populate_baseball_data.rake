@@ -4,14 +4,14 @@ require 'activerecord-import'
 namespace :baseball do
   desc "Populate baseball data from CSV files"
   task populate_all: :environment do
-    populate_all_star_fulls
-    populate_appearances
-    populate_awards_players
-    populate_people
-    populate_battings
-    populate_hall_of_fames
-    populate_pitchings
-    populate_teams
+    Rake::Task['baseball:populate_all_star_fulls'].invoke
+    Rake::Task['baseball:populate_appearances'].invoke
+    Rake::Task['baseball:populate_awards_players'].invoke
+    Rake::Task['baseball:populate_people'].invoke
+    Rake::Task['baseball:populate_battings'].invoke
+    Rake::Task['baseball:populate_hall_of_fames'].invoke
+    Rake::Task['baseball:populate_pitchings'].invoke
+    Rake::Task['baseball:populate_teams'].invoke
   end
 
   desc "Populate AllStarFull data from CSV"
@@ -21,7 +21,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -55,7 +55,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -102,7 +102,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -134,7 +134,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -184,7 +184,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -234,7 +234,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -269,7 +269,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
@@ -325,7 +325,7 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
