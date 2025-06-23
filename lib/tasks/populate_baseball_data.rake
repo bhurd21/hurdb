@@ -2,16 +2,50 @@ require 'csv'
 require 'activerecord-import'
 
 namespace :baseball do
+  BATCH_SIZE = 1000  # Process records in batches of 1000
+
+  def import_csv_in_batches(model, csv_file, &block)
+    return unless File.exist?(csv_file)
+    
+    puts "Importing #{model.name} data from CSV in batches of #{BATCH_SIZE}..."
+    
+    records = []
+    total_imported = 0
+    
+    CSV.foreach(csv_file, headers: true).with_index(1) do |row, index|
+      record = yield(row, model)
+      records << record if record
+      
+      if records.size >= BATCH_SIZE
+        model.import records
+        total_imported += records.size
+        puts "Imported batch: #{total_imported} records so far..."
+        records = []
+        
+        # Add a small sleep to prevent CPU overload
+        sleep(0.1) if total_imported % (BATCH_SIZE * 10) == 0
+      end
+    end
+    
+    # Import any remaining records
+    if records.any?
+      model.import records
+      total_imported += records.size
+    end
+    
+    puts "Imported #{total_imported} #{model.name} records successfully!"
+  end
+
   desc "Populate baseball data from CSV files"
   task populate_all: :environment do
-    populate_all_star_fulls
-    populate_appearances
-    populate_awards_players
-    populate_people
-    populate_battings
-    populate_hall_of_fames
-    populate_pitchings
-    populate_teams
+    Rake::Task['baseball:populate_all_star_fulls'].invoke
+    Rake::Task['baseball:populate_appearances'].invoke
+    Rake::Task['baseball:populate_awards_players'].invoke
+    Rake::Task['baseball:populate_people'].invoke
+    Rake::Task['baseball:populate_battings'].invoke
+    Rake::Task['baseball:populate_hall_of_fames'].invoke
+    Rake::Task['baseball:populate_pitchings'].invoke
+    Rake::Task['baseball:populate_teams'].invoke
   end
 
   desc "Populate AllStarFull data from CSV"
@@ -21,15 +55,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           year_id: row['yearID']&.to_i,
           game_num: row['gameNum']&.to_i,
@@ -40,9 +71,6 @@ namespace :baseball do
           starting_pos: row['startingPos']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -55,15 +83,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           year_id: row['yearID']&.to_i,
           team_id: row['teamID'],
           lg_id: row['lgID'],
@@ -87,9 +112,6 @@ namespace :baseball do
           g_pr: row['G_pr']&.to_f
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -102,15 +124,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           award_id: row['awardID'],
           year_id: row['yearID']&.to_i,
@@ -119,9 +138,6 @@ namespace :baseball do
           notes: row['notes']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -134,15 +150,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           birth_year: row['birthYear']&.to_f,
           birth_month: row['birthMonth']&.to_f,
@@ -169,9 +182,6 @@ namespace :baseball do
           retro_id: row['retroID']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -184,15 +194,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           year_id: row['yearID']&.to_i,
           stint: row['stint']&.to_i,
@@ -219,9 +226,6 @@ namespace :baseball do
           g_old: row['G_old']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -234,15 +238,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           year_id: row['yearid']&.to_i,
           voted_by: row['votedBy'],
@@ -254,9 +255,6 @@ namespace :baseball do
           needed_note: row['needed_note']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -269,15 +267,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           player_id: row['playerID'],
           year_id: row['yearID']&.to_i,
           stint: row['stint']&.to_i,
@@ -310,9 +305,6 @@ namespace :baseball do
           gidp: row['GIDP']&.to_f
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
@@ -325,15 +317,12 @@ namespace :baseball do
     
     if model.exists?
       puts "#{model.name} already has data (#{model.count} records). Skipping import."
-      return
+      next
     end
     
     if File.exist?(csv_file)
-      puts "Importing #{model.name} data from CSV..."
-      records = []
-      
-      CSV.foreach(csv_file, headers: true) do |row|
-        records << model.new(
+      import_csv_in_batches(model, csv_file) do |row, model|
+        model.new(
           year_id: row['yearID']&.to_i,
           lg_id: row['lgID'],
           team_id: row['teamID'],
@@ -384,9 +373,6 @@ namespace :baseball do
           team_id_retro: row['teamIDretro']
         )
       end
-      
-      model.import records
-      puts "Imported #{records.size} #{model.name} records successfully!"
     else
       puts "CSV file not found: #{csv_file}"
     end
