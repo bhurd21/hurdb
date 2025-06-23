@@ -1,0 +1,2 @@
+class AllStarFull < ApplicationRecord
+end

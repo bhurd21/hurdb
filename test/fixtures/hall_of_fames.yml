@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  player_id: MyString
+  year_id: 1
+  voted_by: MyString
+  ballots: 1.5
+  needed: 1.5
+  votes: 1.5
+  inducted: MyString
+  category: MyString
+  needed_note: MyString
+
+two:
+  player_id: MyString
+  year_id: 1
+  voted_by: MyString
+  ballots: 1.5
+  needed: 1.5
+  votes: 1.5
+  inducted: MyString
+  category: MyString
+  needed_note: MyString

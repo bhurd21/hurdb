@@ -24,8 +24,7 @@ module ApiHelper
     query_patterns.each do |pattern_config|
       result = pattern_config[:matcher].call(question)
       if result[:matched]
-        query = pattern_config[:query_builder].call(result[:data])
-        suggestions = execute_query(query)
+        suggestions = execute_pattern_query(pattern_config[:name], result[:data])
         
         return {
           label: question,
@@ -49,13 +48,11 @@ module ApiHelper
     [
       {
         name: "team_team",
-        matcher: method(:match_team_team),
-        query_builder: method(:build_team_team_query)
+        matcher: method(:match_team_team)
       },
       {
         name: "team_stat",
-        matcher: method(:match_team_stat),
-        query_builder: method(:build_team_stat_query)
+        matcher: method(:match_team_stat)
       }
       # Add more patterns here as needed
     ]
@@ -115,38 +112,71 @@ module ApiHelper
     }
   end
 
+  # Execute queries using raw SQL directly
+  def execute_pattern_query(pattern_name, data)
+    begin
+      case pattern_name
+      when "team_team"
+        sql = build_team_team_query(data)
+        execute_sql(sql)
+      when "team_stat"
+        sql = build_team_stat_query(data)
+        execute_sql(sql)
+      else
+        []
+      end
+    rescue => e
+      Rails.logger.error "Query execution failed: #{e.message}"
+      Rails.logger.error "Pattern: #{pattern_name}, Data: #{data}"
+      []
+    end
+  end
+
+  # Execute raw SQL and return results as array of hashes
+  def execute_sql(sql)
+    begin
+      results = ActiveRecord::Base.connection.execute(sql)
+      # Convert to array of hashes with string keys (matching original MySQL format)
+      results.map(&:to_h)
+    rescue => e
+      Rails.logger.error "SQL execution failed: #{e.message}"
+      Rails.logger.error "SQL: #{sql}"
+      []
+    end
+  end
+
   def build_team_team_query(data)
     team1 = data[:team1]
     team2 = data[:team2]
     
     """
     WITH target_teams AS (
-        SELECT '#{team1}' AS teamID
+        SELECT '#{team1}' AS team_id
         UNION ALL 
-        SELECT '#{team2}' AS teamID
+        SELECT '#{team2}' AS team_id
     ),
     players_both_teams AS (
-        SELECT a.playerID
-        FROM Appearances a
-        JOIN target_teams t ON a.teamID = t.teamID
-        WHERE a.yearID > 1899
-        GROUP BY a.playerID
-        HAVING COUNT(DISTINCT a.teamID) = 2
+        SELECT a.player_id
+        FROM appearances a
+        JOIN target_teams t ON a.team_id = t.team_id
+        WHERE a.year_id > 1899
+        GROUP BY a.player_id
+        HAVING COUNT(DISTINCT a.team_id) = 2
     )
     SELECT DISTINCT 
-        CONCAT(p.nameFirst, ' ', p.nameLast) AS nameFull,
-        SUM(a.G_all) AS total_games,
-        CASE 
-            WHEN p.birthYear IS NOT NULL THEN 2025 - p.birthYear 
-            ELSE NULL 
-        END AS age
+        CONCAT(p.name_first, ' ', p.name_last) AS name,
+        'XX' as position,  -- Placeholder for position
+        substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
+        2025 - p.birth_year AS age,
+        null as lps,  -- Placeholder for lps
+        p.bbref_id
     FROM players_both_teams pbt
-    JOIN People p ON p.playerID = pbt.playerID
-    JOIN Appearances a ON a.playerID = pbt.playerID
-    JOIN target_teams t ON a.teamID = t.teamID
-    WHERE a.yearID > 1899
-    GROUP BY p.playerID, p.nameFirst, p.nameLast, p.birthYear
-    ORDER BY total_games ASC, age DESC;
+    JOIN people p ON p.player_id = pbt.player_id
+    JOIN appearances a ON a.player_id = pbt.player_id
+    JOIN target_teams t ON a.team_id = t.team_id
+    WHERE a.year_id > 1899
+    GROUP BY p.player_id, p.name_first, p.name_last, p.birth_year
+    ORDER BY age DESC;
     """
   end
 
@@ -156,69 +186,71 @@ module ApiHelper
     timeframe = data[:timeframe]
     stat_name = data[:stat_name]
     stat_column = data[:stat_column]
-    stat_operator = data[:stat_operator] == 'gte' ? '>=' : '<='
+    stat_operator = data[:stat_operator]
     stat_table = data[:stat_table]
-
+    
+    table_name = stat_table.downcase.pluralize # 'Batting' -> 'battings', 'Pitching' -> 'pitchings'
+    operator_sql = stat_operator == 'gte' ? '>=' : '<='
+    
+    # Handle calculated stats like AVG and ERA
     if stat_column.nil?
-        stat_column = case stat_name
-        when 'AVG'
-            'sum(H) / sum(AB)'
-        when 'ERA'
-            'sum(ER) / sum(IP) * 9'
-        else
-            raise "Unknown stat name: #{stat_name}"
-        end
+      stat_sql = case stat_name
+      when 'AVG'
+        'CAST(SUM(h) AS FLOAT) / SUM(ab)'
+      when 'ERA'
+        'CAST(SUM(er) AS FLOAT) / SUM(ip_outs) * 27'
+      else
+        raise "Unknown stat name: #{stat_name}"
+      end
     else
-        stat_column = "sum(#{stat_column})"
+      stat_sql = "SUM(#{stat_column})"
     end
 
     if timeframe == 'Season'
-        return """
-            with initial_condition as (
-                select distinct playerID
-                from #{stat_table}
-                where teamID = '#{team_abbr}'
-                group by playerID, yearID
-                having #{stat_column} #{stat_operator} #{stat_value}
-            )
-            select
-                concat(p.nameFirst, ' ', p.nameLast) as nameFull,
-                null as total_games,
-                case 
-                    when p.birthYear is not null then 2025 - p.birthYear 
-                    else null 
-                end as age
-            from initial_condition ic
-            left join People p
-                on p.playerID = ic.playerID
-            order by age desc;
-        """
+      """
+      WITH initial_condition AS (
+          SELECT DISTINCT player_id
+          FROM #{table_name}
+          WHERE team_id = '#{team_abbr}'
+          GROUP BY player_id, year_id
+          HAVING #{stat_sql} #{operator_sql} #{stat_value}
+      )
+      SELECT
+        CONCAT(p.name_first, ' ', p.name_last) AS name,
+        'XX' as position,  -- Placeholder for position
+        substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
+        2025 - p.birth_year AS age,
+        null as lps,  -- Placeholder for lps
+        p.bbref_id
+      FROM initial_condition ic
+      LEFT JOIN people p ON p.player_id = ic.player_id
+      ORDER BY age DESC;
+      """
     else
-        return """
-            with stat_condition as (
-                select distinct playerID
-                from #{stat_table}
-                group by playerID
-                having #{stat_column} #{stat_operator} #{stat_value}
-            ),
-            team_condition as (
-                select distinct playerID
-                from Appearances
-                where teamID = '#{team_abbr}'
-            )
-            select
-                concat(p.nameFirst, ' ', p.nameLast) as nameFull,
-                null as total_games,
-                case 
-                    when p.birthYear is not null then 2025 - p.birthYear 
-                    else null 
-                end as age
-            from stat_condition sc
-            left join People p
-                on p.playerID = sc.playerID
-            where sc.playerID in (select * from team_condition)
-            order by age desc;
-        """
+      """
+      WITH stat_condition AS (
+          SELECT DISTINCT player_id
+          FROM #{table_name}
+          GROUP BY player_id
+          HAVING #{stat_sql} #{operator_sql} #{stat_value}
+      ),
+      team_condition AS (
+          SELECT DISTINCT player_id
+          FROM appearances
+          WHERE team_id = '#{team_abbr}'
+      )
+      SELECT
+        CONCAT(p.name_first, ' ', p.name_last) AS name,
+        'XX' as position,  -- Placeholder for position
+        substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
+        2025 - p.birth_year AS age,
+        null as lps,  -- Placeholder for lps
+        p.bbref_id
+      FROM stat_condition sc
+      LEFT JOIN people p ON p.player_id = sc.player_id
+      WHERE sc.player_id IN (SELECT player_id FROM team_condition)
+      ORDER BY age DESC;
+      """
     end
   end
 
@@ -260,42 +292,17 @@ module ApiHelper
 
   def stat_lookup
     {
-        'HITS' =>   { 'column' => 'H',      'operator' => 'gte', 'table' => 'Batting'  },
-        'HR' =>     { 'column' => 'HR',     'operator' => 'gte', 'table' => 'Batting'  },
-        'RBI' =>    { 'column' => 'RBI',    'operator' => 'gte', 'table' => 'Batting'  },
+        'HITS' =>   { 'column' => 'h',      'operator' => 'gte', 'table' => 'Batting'  },
+        'HR' =>     { 'column' => 'hr',     'operator' => 'gte', 'table' => 'Batting'  },
+        'RBI' =>    { 'column' => 'rbi',    'operator' => 'gte', 'table' => 'Batting'  },
         'AVG' =>    { 'column' => nil,      'operator' => 'gte', 'table' => 'Batting'  },
-        'RUN' =>    { 'column' => 'R',      'operator' => 'gte', 'table' => 'Batting'  },
-        'SB' =>     { 'column' => 'SB',     'operator' => 'gte', 'table' => 'Batting'  },
-        '2B' =>     { 'column' => '2B',     'operator' => 'gte', 'table' => 'Batting'  },
-        'WINS' =>   { 'column' => 'W',      'operator' => 'gte', 'table' => 'Pitching' },
+        'RUN' =>    { 'column' => 'r',      'operator' => 'gte', 'table' => 'Batting'  },
+        'SB' =>     { 'column' => 'sb',     'operator' => 'gte', 'table' => 'Batting'  },
+        '2B' =>     { 'column' => 'doubles', 'operator' => 'gte', 'table' => 'Batting'  },
+        'WINS' =>   { 'column' => 'w',      'operator' => 'gte', 'table' => 'Pitching' },
         'ERA' =>    { 'column' => nil,      'operator' => 'lte', 'table' => 'Pitching' },
-        'K' =>      { 'column' => 'SO',     'operator' => 'gte', 'table' => 'Pitching' },
-        'SAVE' =>   { 'column' => 'SV',     'operator' => 'gte', 'table' => 'Pitching' },
+        'K' =>      { 'column' => 'so',     'operator' => 'gte', 'table' => 'Pitching' },
+        'SAVE' =>   { 'column' => 'sv',     'operator' => 'gte', 'table' => 'Pitching' },
     }
-  end
-
-  # Execute the built query and return results
-  def execute_query(query)
-    begin
-      # Establish MySQL connection using the configuration
-      MysqlConnection.establish_mysql_connection
-      
-      # Execute the query and fetch results
-      results = MysqlConnection.connection.execute(query)
-      
-      # Convert results to array of hashes with column names as keys
-      results.to_a
-    rescue => e
-      Rails.logger.error "MySQL query execution failed: #{e.message}"
-      Rails.logger.error "Query: #{query}"
-      []
-    ensure
-      # Close the connection if it was established
-      begin
-        MysqlConnection.connection.close if MysqlConnection.connected?
-      rescue => e
-        Rails.logger.error "Error closing MySQL connection: #{e.message}"
-      end
-    end
   end
 end

@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  player_id: MyString
+  award_id: MyString
+  year_id: 1
+  lg_id: MyString
+  tie: MyString
+  notes: MyText
+
+two:
+  player_id: MyString
+  award_id: MyString
+  year_id: 1
+  lg_id: MyString
+  tie: MyString
+  notes: MyText

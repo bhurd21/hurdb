@@ -23,6 +23,12 @@ gem "bcrypt", "~> 3.1.7"
 # Enable Cross-Origin Resource Sharing (CORS) for API access
 gem "rack-cors"
 
+# CSV library for data import
+gem "csv"
+
+# Bulk import for faster data loading
+gem "activerecord-import"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

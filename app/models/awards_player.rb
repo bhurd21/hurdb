@@ -1,0 +1,2 @@
+class AwardsPlayer < ApplicationRecord
+end
