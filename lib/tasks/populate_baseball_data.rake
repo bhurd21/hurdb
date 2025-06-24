@@ -46,6 +46,7 @@ namespace :baseball do
     Rake::Task['baseball:populate_hall_of_fames'].invoke
     Rake::Task['baseball:populate_pitchings'].invoke
     Rake::Task['baseball:populate_teams'].invoke
+    Rake::Task['baseball:populate_primary_positions'].invoke
   end
 
   desc "Populate AllStarFull data from CSV"
@@ -387,5 +388,65 @@ namespace :baseball do
       puts "Cleared #{count} #{model.name} records"
     end
     puts "All baseball data cleared!"
+  end
+
+  desc "Calculate and populate primary positions for players"
+  task populate_primary_positions: :environment do
+    puts "Calculating primary positions for players..."
+    
+    # Position columns to analyze (excluding g_all, gs, g_batting, g_defense, g_ph, g_pr)
+    position_columns = %w[g_p g_c g_1b g_2b g_3b g_ss g_lf g_cf g_rf g_of g_dh]
+    
+    # Derive position mapping from columns by removing 'g_' prefix and upcasing
+    position_mapping = position_columns.to_h { |col| [col, col.sub(/^g_/, '').upcase] }
+    
+    # Get all unique player_ids from appearances
+    player_ids = Appearance.distinct.pluck(:player_id)
+    puts "Processing #{player_ids.count} unique players..."
+    
+    updated_count = 0
+    batch_size = 100
+    
+    player_ids.each_slice(batch_size) do |batch|
+      # Build a hash to store primary positions for this batch
+      primary_positions = {}
+      
+      batch.each do |player_id|
+        # Sum up games played at each position for this player
+        position_totals = {}
+        
+        # Get all appearance records for this player
+        appearances = Appearance.where(player_id: player_id)
+        
+        position_columns.each do |column|
+          total = appearances.sum(column.to_sym) || 0
+          position_totals[column] = total
+        end
+        
+        # Find the position with the maximum games played
+        max_column = position_totals.max_by { |_, value| value }&.first
+        
+        if max_column && position_totals[max_column] > 0
+          primary_positions[player_id] = position_mapping[max_column]
+        end
+      end
+      
+      # Update people records in batch
+      primary_positions.each do |player_id, position|
+        Person.where(player_id: player_id).update_all(primary_position: position)
+        updated_count += 1
+      end
+      
+      puts "Processed batch: #{updated_count} players updated so far..."
+    end
+    
+    puts "Primary position calculation complete! Updated #{updated_count} players."
+    
+    # Display some statistics
+    position_counts = Person.where.not(primary_position: nil).group(:primary_position).count
+    puts "\nPrimary position distribution:"
+    position_counts.sort_by { |_, count| -count }.each do |position, count|
+      puts "  #{position}: #{count} players"
+    end
   end
 end
