@@ -81,10 +81,10 @@ class Questions::TeamStatService < Questions::BaseQuestionService
       )
       SELECT
         CONCAT(p.name_first, ' ', p.name_last) AS name,
-        'XX' as position,
+        p.primary_position as position,
         substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
         2025 - p.birth_year AS age,
-        null as lps,
+        ROW_NUMBER() OVER (ORDER BY birth_year ASC) as lps,
         p.bbref_id
       FROM initial_condition ic
       LEFT JOIN people p ON p.player_id = ic.player_id
@@ -107,10 +107,10 @@ class Questions::TeamStatService < Questions::BaseQuestionService
       )
       SELECT
         CONCAT(p.name_first, ' ', p.name_last) AS name,
-        'XX' as position,
+        p.primary_position as position,
         substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
         2025 - p.birth_year AS age,
-        null as lps,
+        ROW_NUMBER() OVER (ORDER BY birth_year ASC) as lps,
         p.bbref_id
       FROM stat_condition sc
       LEFT JOIN people p ON p.player_id = sc.player_id

@@ -39,10 +39,10 @@ class Questions::TeamTeamService < Questions::BaseQuestionService
       )
       SELECT DISTINCT 
           CONCAT(p.name_first, ' ', p.name_last) AS name,
-          'XX' as position,
+          p.primary_position as position,
           substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
           2025 - p.birth_year AS age,
-          null as lps,
+          ROW_NUMBER() OVER (ORDER BY birth_year ASC) as lps,
           p.bbref_id
       FROM players_both_teams pbt
       JOIN people p ON p.player_id = pbt.player_id
