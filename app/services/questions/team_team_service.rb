@@ -42,7 +42,7 @@ class Questions::TeamTeamService < Questions::BaseQuestionService
           p.primary_position as position,
           substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
           2025 - p.birth_year AS age,
-          ROW_NUMBER() OVER (ORDER BY birth_year ASC) as lps,
+          ROW_NUMBER() OVER (ORDER BY p.bwar_career IS NULL DESC, p.bwar_career DESC, 2025 - p.birth_year DESC) as lps,
           p.bbref_id
       FROM players_both_teams pbt
       JOIN people p ON p.player_id = pbt.player_id
@@ -50,7 +50,7 @@ class Questions::TeamTeamService < Questions::BaseQuestionService
       JOIN target_teams t ON a.team_id = t.team_id
       WHERE a.year_id > 1899
       GROUP BY p.player_id, p.name_first, p.name_last, p.birth_year
-      ORDER BY age DESC;
+      ORDER BY p.bwar_career IS NULL DESC, p.bwar_career DESC, age DESC;
     SQL
   end
 end
