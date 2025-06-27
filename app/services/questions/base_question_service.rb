@@ -16,7 +16,7 @@ class Questions::BaseQuestionService
     suggestions = execute_query(result[:data])
     {
       label: @question,
-      suggestions: suggestions.first(10),
+      suggestions: suggestions.first(100),
       pattern_type: pattern_name
     }
   rescue => e
