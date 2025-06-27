@@ -16,6 +16,12 @@ class Questions::TeamStatService < Questions::BaseQuestionService
     return { matched: false } unless stat_match
     
     value = stat_match[:value]
+    # assume value matches as integer (e.g. 0.300 as 300)
+    if stat_condition.start_with?('.')
+        value_divisor = 10 ** value.length
+        value_numerator = value.to_f
+        value = value_numerator / value_divisor
+    end
     stat_name = stat_match[:stat].strip.upcase
     stat_object = stat_lookup[stat_name]
     return { matched: false } unless stat_object
