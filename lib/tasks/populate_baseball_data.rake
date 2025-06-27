@@ -449,4 +449,156 @@ namespace :baseball do
       puts "  #{position}: #{count} players"
     end
   end
+
+  desc "Match Baseball Reference WAR data to players using fuzzy name matching"
+  task match_bwar_data: :environment do
+    csv_file = Rails.root.join('db', 'csv', 'bbref_top1000_career_war.csv')
+    
+    unless File.exist?(csv_file)
+      puts "CSV file not found: #{csv_file}"
+      exit 1
+    end
+    
+    # Define helper methods for name matching
+    def normalize_name(name)
+      name.downcase.strip.gsub(/[^a-z\s]/, '').squeeze(' ')
+    end
+    
+    def calculate_similarity(str1, str2)
+      str1_norm = normalize_name(str1)
+      str2_norm = normalize_name(str2)
+      
+      # Exact match
+      return 1.0 if str1_norm == str2_norm
+      
+      # Check for "Jr" or "Sr" suffix issues - be more conservative
+      # If one name has "jr" and the other doesn't, they're likely father/son
+      str1_has_suffix = str1_norm.include?('jr') || str1_norm.include?('sr') || str1_norm.include?('ii') || str1_norm.include?('iii')
+      str2_has_suffix = str2_norm.include?('jr') || str2_norm.include?('sr') || str2_norm.include?('ii') || str2_norm.include?('iii')
+      
+      if str1_has_suffix != str2_has_suffix
+        # Different suffix status - likely father/son, be very conservative
+        # Only match if they're very similar after removing suffix
+        base1 = str1_norm.gsub(/\b(jr|sr|ii|iii)\b/, '').strip
+        base2 = str2_norm.gsub(/\b(jr|sr|ii|iii)\b/, '').strip
+        return 0.75 if base1 == base2  # Lower score to stay below threshold
+      end
+      
+      # Check if one contains the other (but only if neither has suffix issues)
+      if str1_norm.include?(str2_norm) || str2_norm.include?(str1_norm)
+        return 0.9
+      end
+      
+      # Calculate simple character overlap
+      chars1 = str1_norm.chars.sort
+      chars2 = str2_norm.chars.sort
+      overlap = (chars1 & chars2).length
+      total_chars = [chars1.length, chars2.length].max
+      
+      overlap.to_f / total_chars
+    end
+    
+    def find_best_match(csv_name, people_data, threshold = 0.85)
+      best_match = nil
+      best_score = 0.0
+      
+      people_data.each do |person|
+        score = calculate_similarity(csv_name, person[:full_name])
+        if score > best_score && score >= threshold
+          best_match = person
+          best_score = score
+        end
+      end
+      
+      { match: best_match, score: best_score }
+    end
+    
+    people_data = Person.all.map do |person|
+      {
+        id: person.id,
+        player_id: person.player_id,
+        full_name: person.full_name,
+        name_first: person.name_first,
+        name_last: person.name_last,
+        bbref_id: person.bbref_id
+      }
+    end
+    
+    matched_count = 0
+    unmatched_count = 0
+    low_confidence_matches = []
+    duplicate_matches = []
+    bbref_id_matches = 0
+    
+    CSV.foreach(csv_file, headers: true) do |row|
+      csv_name = "#{row['firstName']} #{row['lastName']}".strip
+      war_value = row['war'].to_f
+      
+      # Strategy 1: Try exact bbref_id match
+      last_name_part = row['lastName'].downcase.gsub(/[^a-z]/, '')[0,5]
+      first_name_part = row['firstName'].downcase.gsub(/[^a-z]/, '')[0,2]
+      bbref_id_candidate = "#{last_name_part}#{first_name_part}01"
+      
+      bbref_match = people_data.find { |p| p[:bbref_id] == bbref_id_candidate }
+      
+      if bbref_match
+        person = Person.find(bbref_match[:id])
+        if person.bwar_career.nil?
+          person.update!(bwar_career: war_value)
+          matched_count += 1
+          bbref_id_matches += 1
+        else
+          duplicate_matches << { csv_name: csv_name, war: war_value, existing_player: person.full_name, existing_war: person.bwar_career }
+        end
+        next
+      end
+      
+      # Strategy 2: Name-based matching
+      match_result = find_best_match(csv_name, people_data, 0.85)
+      
+      if match_result[:match]
+        person = Person.find(match_result[:match][:id])
+        
+        if person.bwar_career.nil?
+          person.update!(bwar_career: war_value)
+          matched_count += 1
+        else
+          duplicate_matches << { csv_name: csv_name, war: war_value, existing_player: person.full_name, existing_war: person.bwar_career }
+        end
+      else
+        low_threshold_match = find_best_match(csv_name, people_data, 0.6)
+        
+        if low_threshold_match[:match]
+          low_confidence_matches << { csv_name: csv_name, war: war_value, best_match: low_threshold_match[:match][:full_name], similarity: low_threshold_match[:score].round(3) }
+        end
+        unmatched_count += 1
+      end
+    end
+    
+    puts "Matched: #{matched_count} (#{bbref_id_matches} by ID, #{matched_count - bbref_id_matches} by name)"
+    puts "Unmatched: #{unmatched_count}, Duplicates: #{duplicate_matches.size}"
+    puts "Total with BWAR: #{Person.where.not(bwar_career: nil).count}"
+  end
+
+  desc "Fix incorrectly matched father/son BWAR data"
+  task fix_father_son_bwar: :environment do
+    corrections = [
+      { csv_name: "Cal Ripken Jr.", csv_war: 95.9, wrong_player_id: "ripkeca01", correct_player_id: "ripkeca99" },
+      { csv_name: "Ken Griffey Jr.", csv_war: 83.8, wrong_player_id: "griffke01", correct_player_id: "griffke02" }
+    ]
+    
+    corrections.each do |correction|
+      wrong_player = Person.find_by(player_id: correction[:wrong_player_id])
+      if wrong_player&.bwar_career == correction[:csv_war]
+        wrong_player.update!(bwar_career: nil)
+      end
+      
+      correct_player = Person.find_by(player_id: correction[:correct_player_id])
+      if correct_player && correct_player.bwar_career.nil?
+        correct_player.update!(bwar_career: correction[:csv_war])
+      end
+    end
+    
+    puts "Father/son corrections completed"
+  end
 end

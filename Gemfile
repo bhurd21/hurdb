@@ -29,6 +29,9 @@ gem "csv"
 # Bulk import for faster data loading
 gem "activerecord-import"
 
+# Fuzzy string matching for player name matching
+gem "fuzzy_match"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
