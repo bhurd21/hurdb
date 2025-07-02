@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Privacy Policy - Utility Man Chrome Extension</title>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #34495e; margin-top: 30px; }
+    h3 { color: #7f8c8d; }
+    strong { color: #2c3e50; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy for Utility Man Chrome Extension</h1>
+
+  <p><strong>Last Updated:</strong> July 2, 2025<br>
+  <strong>Version:</strong> 1.0</p>
+
+  <h2>Overview</h2>
+  <p>Utility Man is a Chrome extension that provides solutions for Immaculate Grid puzzles by querying Sean Lahman's baseball database. This privacy policy explains how we handle data in accordance with Chrome Web Store policies and user privacy expectations.</p>
+
+  <h2>Data Collection and Handling</h2>
+
+  <h3>What Information We Collect</h3>
+  <p><strong>Utility Man does NOT collect, store, or transmit any personal or sensitive user data.</strong></p>
+
+  <p>Specifically, our extension:</p>
+  <ul>
+    <li><strong>Does NOT</strong> collect personally identifiable information (names, addresses, emails, phone numbers)</li>
+    <li><strong>Does NOT</strong> collect financial or payment information</li>
+    <li><strong>Does NOT</strong> collect authentication information (logins, passwords, cookies)</li>
+    <li><strong>Does NOT</strong> collect web browsing activity or history</li>
+    <li><strong>Does NOT</strong> collect website content beyond what is necessary for functionality</li>
+    <li><strong>Does NOT</strong> collect form data or personal communications</li>
+    <li><strong>Does NOT</strong> collect user-generated content</li>
+  </ul>
+
+  <h3>What Information We Do Access</h3>
+  <p>The extension only accesses:</p>
+
+  <ol>
+    <li><strong>Grid Cell Labels</strong>: The extension reads aria-label attributes from grid cells on immaculategrid.com to determine which baseball statistics are being requested (e.g., "Yankees + Home Runs"). This information is:
+      <ul>
+        <li>Used solely to query our baseball database API</li>
+        <li>Not stored permanently</li>
+        <li>Not transmitted to any third parties</li>
+        <li>Processed only on pages matching "https://www.immaculategrid.com/*"</li>
+      </ul>
+    </li>
+    <li><strong>User Preferences</strong>: The extension stores your visibility preference (hide/show solutions by default) locally in your browser using Chrome's storage API. This data:
+      <ul>
+        <li>Never leaves your device</li>
+        <li>Is not transmitted to any servers</li>
+        <li>Can be cleared by uninstalling the extension</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h3>How We Use Information</h3>
+  <p>The grid cell information is used exclusively to:</p>
+  <ul>
+    <li>Query the Sean Lahman baseball database via our API at brennanhurd.com/api/imgrid</li>
+    <li>Display relevant player solutions within the game interface</li>
+    <li>Provide Baseball Reference links for additional player information</li>
+  </ul>
+
+  <h3>What Information We Share</h3>
+  <p><strong>We do not share any information with third parties.</strong> The extension operates entirely between your browser and our baseball database API.</p>
+
+  <h3>Data Transmission Security</h3>
+  <p>All API communications use HTTPS encryption (https://brennanhurd.com/api/imgrid) to ensure secure transmission of grid queries. No personal data is transmitted - only baseball statistic combinations like "Yankees + Home Runs".</p>
+
+  <h2>Permissions Explanation</h2>
+
+  <h3>activeTab Permission</h3>
+  <ul>
+    <li><strong>Purpose</strong>: Allows the extension to read grid cell labels and inject solutions on immaculategrid.com</li>
+    <li><strong>Scope</strong>: Only active when you're on immaculategrid.com</li>
+    <li><strong>Data Access</strong>: Limited to aria-label attributes and DOM manipulation for displaying solutions</li>
+  </ul>
+
+  <h3>storage Permission</h3>
+  <ul>
+    <li><strong>Purpose</strong>: Saves your visibility preference (hide/show solutions by default)</li>
+    <li><strong>Scope</strong>: Local browser storage only</li>
+    <li><strong>Data Access</strong>: Single boolean preference value</li>
+  </ul>
+
+  <h3>Host Permissions</h3>
+  <ul>
+    <li><strong>immaculategrid.com</strong>: Required to read grid elements and display solutions</li>
+    <li><strong>brennanhurd.com/api</strong>: Required to fetch baseball player data from our database</li>
+  </ul>
+
+  <p>Neither service receives any personal information about users.</p>
+
+  <h2>Third-Party Services</h2>
+  <p>The extension connects to:</p>
+  <ul>
+    <li><strong>brennanhurd.com/api/imgrid</strong>: Our baseball database API that provides player information based on grid requirements</li>
+    <li><strong>baseball-reference.com</strong>: Optional external links for detailed player statistics (user-initiated only)</li>
+  </ul>
+
+  <p>Neither service receives any personal information about users.</p>
+
+  <h2>Data Retention</h2>
+  <ul>
+    <li><strong>Grid queries</strong>: Not stored or logged</li>
+    <li><strong>User preferences</strong>: Stored locally until extension is uninstalled</li>
+    <li><strong>API responses</strong>: Cached temporarily in browser memory during active sessions</li>
+  </ul>
+
+  <h2>User Rights and Control</h2>
+
+  <h3>How to Access Your Data</h3>
+  <p>Your only stored data is the visibility preference, which you can view and modify through the extension popup.</p>
+
+  <h3>How to Delete Your Data</h3>
+  <ul>
+    <li>Uninstall the extension to remove all local preferences</li>
+    <li>Disable the extension to stop all data processing</li>
+    <li>Use Chrome's extension management to clear extension data</li>
+  </ul>
+
+  <h3>How to Control Data Collection</h3>
+  <p>The extension only processes data when actively used on immaculategrid.com. You can:</p>
+  <ul>
+    <li>Disable the extension when not needed</li>
+    <li>Remove host permissions through Chrome's extension settings</li>
+    <li>Uninstall completely to stop all data access</li>
+  </ul>
+
+  <h2>Contact Information</h2>
+  <p>For privacy-related questions or concerns about this extension, please contact:</p>
+  <ul>
+    <li><strong>Developer</strong>: Brennan Hurd</li>
+    <li><strong>Extension Support</strong>: Via Chrome Web Store developer contact</li>
+  </ul>
+
+  <h2>Changes to This Policy</h2>
+  <p>We will update this privacy policy if our data handling practices change. Check the "Last Updated" date above for the most recent version.</p>
+
+  <h2>Compliance Statement</h2>
+  <p>This extension complies with:</p>
+  <ul>
+    <li>Chrome Web Store Developer Program Policies</li>
+    <li>Minimum permission principles (only requests necessary permissions)</li>
+    <li>Secure data transmission requirements (HTTPS for all API calls)</li>
+  </ul>
+
+  <p>Since Utility Man does not collect personal or sensitive user data as defined by Chrome Web Store policies, it falls under the category of extensions with no special privacy obligations beyond this disclosure.</p>
+</body>
+</html>
