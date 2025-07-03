@@ -452,7 +452,7 @@ namespace :baseball do
 
   desc "Match Baseball Reference WAR data to players using fuzzy name matching"
   task match_bwar_data: :environment do
-    csv_file = Rails.root.join('tmp', 'bbref_top1000_career_war.csv')
+    csv_file = Rails.root.join('db', 'csv', 'bbref_top1000_career_war.csv')
     
     unless File.exist?(csv_file)
       puts "CSV file not found: #{csv_file}"
