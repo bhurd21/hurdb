@@ -2,7 +2,10 @@ class Questions::ProcessorService
   # Registry of available question services
   QUESTION_SERVICES = [
     Questions::TeamTeamService,
-    Questions::TeamStatService
+    Questions::TeamStatService,
+    Questions::PositionStatService,
+    Questions::MultiPositionService,
+    Questions::PlayedPositionService
   ].freeze
 
   def self.call(questions)

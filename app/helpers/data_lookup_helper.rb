@@ -51,6 +51,25 @@ module DataLookupHelper
     }.freeze
   end
 
+  def self.position_lookup
+    @position_lookup ||= {
+      'Pitcher' => 'g_p',
+      'Catcher' => 'g_c',
+      'First Base' => 'g_1b',
+      'Second Base' => 'g_2b',
+      'Third Base' => 'g_3b',
+      'Shortstop' => 'g_ss',
+      'Left Field' => 'g_lf',
+      'Center Field' => 'g_cf',
+      'Right Field' => 'g_rf',
+      'Outfield' => 'g_of',
+      'DH' => 'g_dh',
+      'Designated Hitter' => 'g_dh',
+      'Pinch Hitter' => 'g_ph',
+      'Pinch Runner' => 'g_pr'
+    }.freeze
+  end
+
   # Convenience methods for accessing lookups
   def team_lookup
     DataLookupHelper.team_lookup
@@ -58,5 +77,9 @@ module DataLookupHelper
 
   def stat_lookup
     DataLookupHelper.stat_lookup
+  end
+
+  def position_lookup
+    DataLookupHelper.position_lookup
   end
 end
