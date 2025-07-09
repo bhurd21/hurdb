@@ -4,6 +4,12 @@ module Questions::Concerns::StatExtractor
   private
 
   def extract_stat_info(stat_condition)
+    # Check for compound stat patterns like "30+ HR / 30+ SB Season Batting"
+    compound_match = stat_condition.match(/(\d+)\+\s([A-Za-z]+)\s\/\s(\d+)\+\s([A-Za-z]+)\s(Season|Career)\s?(Batting|Pitching)?/i)
+    if compound_match
+      return extract_compound_stat_info(compound_match)
+    end
+
     timeframe = stat_condition[/Season|Career/i]&.capitalize
     return nil unless timeframe
 
@@ -25,7 +31,37 @@ module Questions::Concerns::StatExtractor
     }
   end
 
+  def extract_compound_stat_info(compound_match)
+    value1, stat1, value2, stat2, timeframe = compound_match.captures
+    
+    stat1_name = stat1.strip.upcase
+    stat2_name = stat2.strip.upcase
+    
+    stat1_object = stat_lookup[stat1_name]
+    stat2_object = stat_lookup[stat2_name]
+    
+    return nil unless stat1_object && stat2_object
+    
+    # For compound stats, we return a special structure
+    {
+      value: nil, # Not used for compound stats
+      name: "COMPOUND_#{stat1_name}_#{stat2_name}",
+      column: nil, # Special handling in build_stat_sql
+      operator: 'gte',
+      table: stat1_object['table'], # Assume both stats are from same table
+      timeframe: timeframe.capitalize,
+      compound: true,
+      stat1: { name: stat1_name, value: value1.to_f, column: stat1_object['column'] },
+      stat2: { name: stat2_name, value: value2.to_f, column: stat2_object['column'] }
+    }
+  end
+
   def build_stat_sql(stat_name, stat_column)
+    # Handle compound stats
+    if stat_name&.start_with?('COMPOUND_')
+      return 'compound_stat_placeholder' # This will be replaced in the calling service
+    end
+    
     return "SUM(#{stat_column})" if stat_column
 
     case stat_name
