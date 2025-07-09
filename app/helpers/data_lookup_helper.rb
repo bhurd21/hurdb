@@ -44,6 +44,7 @@ module DataLookupHelper
       'RUN' =>    { 'column' => 'r',       'operator' => 'gte', 'table' => 'Batting'  },
       'SB' =>     { 'column' => 'sb',      'operator' => 'gte', 'table' => 'Batting'  },
       '2B' =>     { 'column' => 'doubles', 'operator' => 'gte', 'table' => 'Batting'  },
+      'WIN' =>    { 'column' => 'w',       'operator' => 'gte', 'table' => 'Pitching' },
       'WINS' =>   { 'column' => 'w',       'operator' => 'gte', 'table' => 'Pitching' },
       'ERA' =>    { 'column' => nil,       'operator' => 'lte', 'table' => 'Pitching' },
       'K' =>      { 'column' => 'so',      'operator' => 'gte', 'table' => 'Pitching' },

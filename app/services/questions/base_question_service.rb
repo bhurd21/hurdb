@@ -1,5 +1,8 @@
 class Questions::BaseQuestionService
   include DataLookupHelper
+  include Questions::Concerns::StatExtractor
+  include Questions::Concerns::PositionExtractor
+  include Questions::Concerns::QueryBuilder
 
   def self.call(question)
     new(question).call
