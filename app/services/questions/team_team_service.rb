@@ -2,8 +2,8 @@ class Questions::TeamTeamService < Questions::BaseQuestionService
   private
 
   def match_pattern
-    conditions = @question.split(/\s\+\s/).map(&:strip)
-    return { matched: false } unless conditions.length == 2
+    conditions = split_and_validate_conditions(@question)
+    return { matched: false } unless conditions
     
     team1_condition, team2_condition = conditions
     team1_abbr = team_lookup[team1_condition]

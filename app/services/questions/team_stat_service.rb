@@ -2,29 +2,15 @@ class Questions::TeamStatService < Questions::BaseQuestionService
   private
 
   def match_pattern
-    conditions = @question.split(/\s\+\s/).map(&:strip)
-    return { matched: false } unless conditions.length == 2
+    conditions = split_and_validate_conditions(@question)
+    return { matched: false } unless conditions
 
     team_condition = conditions.find { |c| team_lookup.key?(c) }
     stat_condition = conditions.find { |c| c.match?(/Season|Career/i) }
     return { matched: false } unless team_condition && stat_condition
 
-    timeframe = stat_condition[/Season|Career/i]&.capitalize
-    return { matched: false } unless timeframe
-
-    stat_match = stat_condition.match(/\b(?<value>\<?\.?\d+(?:\.\d+)?)(?<op>\+)?\s(?<stat>[A-Za-z]+)\s(Season|Career)\b/i)
-    return { matched: false } unless stat_match
-    
-    value = stat_match[:value]
-    # assume value matches as integer (e.g. 0.300 as 300)
-    if stat_condition.start_with?('.')
-        value_divisor = 10 ** value.length
-        value_numerator = value.to_f
-        value = value_numerator / value_divisor
-    end
-    stat_name = stat_match[:stat].strip.upcase
-    stat_object = stat_lookup[stat_name]
-    return { matched: false } unless stat_object
+    stat_info = extract_stat_info(stat_condition)
+    return { matched: false } unless stat_info
 
     team_abbr = team_lookup[team_condition]
     return { matched: false } unless team_abbr
@@ -33,12 +19,12 @@ class Questions::TeamStatService < Questions::BaseQuestionService
       matched: true,
       data: {
         team_abbr: team_abbr,
-        stat_value: value.to_f,
-        timeframe: timeframe,
-        stat_name: stat_name,
-        stat_column: stat_object['column'],
-        stat_operator: stat_object['operator'],
-        stat_table: stat_object['table']
+        stat_value: stat_info[:value],
+        timeframe: stat_info[:timeframe],
+        stat_name: stat_info[:name],
+        stat_column: stat_info[:column],
+        stat_operator: stat_info[:operator],
+        stat_table: stat_info[:table]
       }
     }
   end
@@ -52,27 +38,14 @@ class Questions::TeamStatService < Questions::BaseQuestionService
     stat_operator = data[:stat_operator]
     stat_table = data[:stat_table]
     
-    table_name = stat_table.downcase.pluralize
-    operator_sql = stat_operator == 'gte' ? '>=' : '<='
+    table_name = format_table_name(stat_table)
+    operator_sql = format_operator_sql(stat_operator)
     stat_sql = build_stat_sql(stat_name, stat_column)
 
     if timeframe == 'Season'
       build_season_query(table_name, team_abbr, stat_sql, operator_sql, stat_value)
     else
       build_career_query(table_name, team_abbr, stat_sql, operator_sql, stat_value)
-    end
-  end
-
-  def build_stat_sql(stat_name, stat_column)
-    return "SUM(#{stat_column})" if stat_column
-
-    case stat_name
-    when 'AVG'
-      'CAST(SUM(h) AS FLOAT) / SUM(ab)'
-    when 'ERA'
-      'CAST(SUM(er) AS FLOAT) / SUM(ip_outs) * 27'
-    else
-      raise "Unknown stat name: #{stat_name}"
     end
   end
 

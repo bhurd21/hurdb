@@ -2,8 +2,8 @@ class Questions::StatPositionService < Questions::BaseQuestionService
   private
 
   def match_pattern
-    conditions = @question.split(/\s\+\s/).map(&:strip)
-    return { matched: false } unless conditions.length == 2
+    conditions = split_and_validate_conditions(@question)
+    return { matched: false } unless conditions
 
     # Find stat condition
     stat_condition = conditions.find { |c| c.match?(/Season|Career/i) }
@@ -40,8 +40,8 @@ class Questions::StatPositionService < Questions::BaseQuestionService
 
   def build_query(data)
     # Extract stat data
-    stat_table = data[:stat_table].downcase.pluralize
-    stat_operator_sql = data[:stat_operator] == 'gte' ? '>=' : '<='
+    stat_table = format_table_name(data[:stat_table])
+    stat_operator_sql = format_operator_sql(data[:stat_operator])
     stat_sql = build_stat_sql(data[:stat_name], data[:stat_column])
     timeframe = data[:timeframe]
     stat_value = data[:stat_value]
@@ -50,7 +50,7 @@ class Questions::StatPositionService < Questions::BaseQuestionService
     position_column = data[:position_column]
     
     # Build GROUP BY clause based on timeframe
-    stat_group_by = timeframe == 'Season' ? 'player_id, year_id' : 'player_id'
+    stat_group_by = build_group_by_clause(timeframe)
     
     <<~SQL
       WITH stat_condition AS (
@@ -85,69 +85,5 @@ class Questions::StatPositionService < Questions::BaseQuestionService
     SQL
   end
 
-  def build_stat_sql(stat_name, stat_column)
-    return "SUM(#{stat_column})" if stat_column
-
-    case stat_name
-    when 'AVG'
-      'CAST(SUM(h) AS FLOAT) / SUM(ab)'
-    when 'ERA'
-      'CAST(SUM(er) AS FLOAT) / SUM(ip_outs) * 27'
-    else
-      raise "Unknown stat name: #{stat_name}"
-    end
-  end
-
   private
-
-  def extract_stat_info(stat_condition)
-    timeframe = stat_condition[/Season|Career/i]&.capitalize
-    return nil unless timeframe
-
-    stat_match = stat_condition.match(/\b(?<value>\<?\.?\d+(?:\.\d+)?)(?<op>\+)?\s(?<stat>[A-Za-z]+)\s(Season|Career)\b/i)
-    return nil unless stat_match
-    
-    value = stat_match[:value]
-    # Handle decimal values like .300
-    if stat_condition.start_with?('.')
-      value_divisor = 10 ** value.length
-      value_numerator = value.to_f
-      value = value_numerator / value_divisor
-    end
-    
-    stat_name = stat_match[:stat].strip.upcase
-    stat_object = stat_lookup[stat_name]
-    return nil unless stat_object
-
-    {
-      value: value.to_f,
-      name: stat_name,
-      column: stat_object['column'],
-      operator: stat_object['operator'],
-      table: stat_object['table'],
-      timeframe: timeframe
-    }
-  end
-
-  def extract_position_info(position_condition)
-    # Handle "Pitched min. 1 game"
-    if position_condition.match?(/^Pitched\s+min\.\s+1\s+game$/i)
-      return ['Pitcher', 'g_p']
-    end
-    
-    # Handle "Caught min. 1 game"  
-    if position_condition.match?(/^Caught\s+min\.\s+1\s+game$/i)
-      return ['Catcher', 'g_c']
-    end
-    
-    # Handle "Played {Position} min. 1 game"
-    position_match = position_condition.match(/^Played\s+(.+)\s+min\.\s+1\s+game$/i)
-    if position_match
-      position_name = position_match[1].strip
-      position_column = position_lookup[position_name] || position_lookup[position_name.split.map(&:capitalize).join(' ')]
-      return [position_name, position_column] if position_column
-    end
-    
-    [nil, nil]
-  end
 end

@@ -2,8 +2,8 @@ class Questions::StatStatService < Questions::BaseQuestionService
   private
 
   def match_pattern
-    conditions = @question.split(/\s\+\s/).map(&:strip)
-    return { matched: false } unless conditions.length == 2
+    conditions = split_and_validate_conditions(@question)
+    return { matched: false } unless conditions
 
     # Both conditions should be stat conditions
     stat_conditions = conditions.select { |c| c.match?(/Season|Career/i) }
@@ -36,21 +36,21 @@ class Questions::StatStatService < Questions::BaseQuestionService
 
   def build_query(data)
     # Extract data for both stats
-    stat1_table = data[:stat1_table].downcase.pluralize
-    stat1_operator_sql = data[:stat1_operator] == 'gte' ? '>=' : '<='
+    stat1_table = format_table_name(data[:stat1_table])
+    stat1_operator_sql = format_operator_sql(data[:stat1_operator])
     stat1_sql = build_stat_sql(data[:stat1_name], data[:stat1_column])
     stat1_timeframe = data[:stat1_timeframe]
     stat1_value = data[:stat1_value]
     
-    stat2_table = data[:stat2_table].downcase.pluralize
-    stat2_operator_sql = data[:stat2_operator] == 'gte' ? '>=' : '<='
+    stat2_table = format_table_name(data[:stat2_table])
+    stat2_operator_sql = format_operator_sql(data[:stat2_operator])
     stat2_sql = build_stat_sql(data[:stat2_name], data[:stat2_column])
     stat2_timeframe = data[:stat2_timeframe]
     stat2_value = data[:stat2_value]
     
     # Build GROUP BY clauses based on timeframe
-    stat1_group_by = stat1_timeframe == 'Season' ? 'player_id, year_id' : 'player_id'
-    stat2_group_by = stat2_timeframe == 'Season' ? 'player_id, year_id' : 'player_id'
+    stat1_group_by = build_group_by_clause(stat1_timeframe)
+    stat2_group_by = build_group_by_clause(stat2_timeframe)
     
     <<~SQL
       WITH stat_condition1 AS (
@@ -85,47 +85,5 @@ class Questions::StatStatService < Questions::BaseQuestionService
     SQL
   end
 
-  def build_stat_sql(stat_name, stat_column)
-    return "SUM(#{stat_column})" if stat_column
-
-    case stat_name
-    when 'AVG'
-      'CAST(SUM(h) AS FLOAT) / SUM(ab)'
-    when 'ERA'
-      'CAST(SUM(er) AS FLOAT) / SUM(ip_outs) * 27'
-    else
-      raise "Unknown stat name: #{stat_name}"
-    end
-  end
-
   private
-
-  def extract_stat_info(stat_condition)
-    timeframe = stat_condition[/Season|Career/i]&.capitalize
-    return nil unless timeframe
-
-    stat_match = stat_condition.match(/\b(?<value>\<?\.?\d+(?:\.\d+)?)(?<op>\+)?\s(?<stat>[A-Za-z]+)\s(Season|Career)\b/i)
-    return nil unless stat_match
-    
-    value = stat_match[:value]
-    # Handle decimal values like .300
-    if stat_condition.start_with?('.')
-      value_divisor = 10 ** value.length
-      value_numerator = value.to_f
-      value = value_numerator / value_divisor
-    end
-    
-    stat_name = stat_match[:stat].strip.upcase
-    stat_object = stat_lookup[stat_name]
-    return nil unless stat_object
-
-    {
-      value: value.to_f,
-      name: stat_name,
-      column: stat_object['column'],
-      operator: stat_object['operator'],
-      table: stat_object['table'],
-      timeframe: timeframe
-    }
-  end
 end
