@@ -1,4 +1,4 @@
-class Questions::MultiPositionService < Questions::BaseQuestionService
+class Questions::PositionPositionService < Questions::BaseQuestionService
   private
 
   def match_pattern
@@ -33,23 +33,11 @@ class Questions::MultiPositionService < Questions::BaseQuestionService
     position2_column = data[:position2_column]
     
     <<~SQL
-      WITH position1_condition AS (
-          SELECT DISTINCT player_id, year_id
-          FROM appearances
-          WHERE #{position1_column} > 0
-            AND year_id > 1899
-      ),
-      position2_condition AS (
-          SELECT DISTINCT player_id, year_id
-          FROM appearances
-          WHERE #{position2_column} > 0
-            AND year_id > 1899
-      ),
-      both_positions AS (
-          SELECT p1.player_id
-          FROM position1_condition p1
-          JOIN position2_condition p2 ON p1.player_id = p2.player_id
-          GROUP BY p1.player_id
+      WITH initial_condition AS (
+        SELECT player_id
+        FROM appearances
+        GROUP BY player_id
+        HAVING SUM(#{position1_column}) > 0 AND SUM(#{position2_column}) > 0
       )
       SELECT
         CONCAT(p.name_first, ' ', p.name_last) AS name,
@@ -58,11 +46,13 @@ class Questions::MultiPositionService < Questions::BaseQuestionService
         2025 - p.birth_year AS age,
         ROW_NUMBER() OVER (ORDER BY p.bwar_career IS NULL DESC, p.bwar_career ASC, p.birth_year DESC) as lps,
         p.bbref_id
-      FROM both_positions bp
-      JOIN people p ON p.player_id = bp.player_id
+      FROM initial_condition ic
+      LEFT JOIN people p ON p.player_id = ic.player_id
       ORDER BY p.bwar_career IS NULL DESC, p.bwar_career DESC, age DESC;
     SQL
   end
+
+  private
 
   def extract_position_info(position_condition)
     # Handle "Pitched min. 1 game"
@@ -84,9 +74,5 @@ class Questions::MultiPositionService < Questions::BaseQuestionService
     end
     
     [nil, nil]
-  end
-
-  def position_lookup
-    DataLookupHelper.position_lookup
   end
 end

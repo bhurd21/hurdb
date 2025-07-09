@@ -3,9 +3,10 @@ class Questions::ProcessorService
   QUESTION_SERVICES = [
     Questions::TeamTeamService,
     Questions::TeamStatService,
-    Questions::PositionStatService,
-    Questions::MultiPositionService,
-    Questions::PlayedPositionService
+    Questions::TeamPositionService,
+    Questions::StatStatService,
+    Questions::StatPositionService,
+    Questions::PositionPositionService
   ].freeze
 
   def self.call(questions)
