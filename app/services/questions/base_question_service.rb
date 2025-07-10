@@ -2,6 +2,7 @@ class Questions::BaseQuestionService
   include DataLookupHelper
   include Questions::Concerns::StatExtractor
   include Questions::Concerns::PositionExtractor
+  include Questions::Concerns::PlayerExtractor
   include Questions::Concerns::QueryBuilder
 
   def self.call(question)

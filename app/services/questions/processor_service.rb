@@ -4,9 +4,13 @@ class Questions::ProcessorService
     Questions::TeamTeamService,
     Questions::TeamStatService,
     Questions::TeamPositionService,
+    Questions::TeamPlayerService,
     Questions::StatStatService,
     Questions::StatPositionService,
-    Questions::PositionPositionService
+    Questions::StatPlayerService,
+    Questions::PositionPositionService,
+    Questions::PositionPlayerService,
+    Questions::PlayerPlayerService
   ].freeze
 
   def self.call(questions)

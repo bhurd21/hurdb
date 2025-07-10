@@ -71,6 +71,17 @@ module DataLookupHelper
     }.freeze
   end
 
+  def self.player_lookup
+    @player_lookup ||= {
+      'Born Outside US 50 States and DC' => 'birth_country != \'USA\'',
+      'Canada' => 'birth_country = \'CAN\'',
+      'Dominican Republic' => 'birth_country = \'D.R.\'',
+      'Puerto Rico' => 'birth_country = \'P.R.\'',
+      'United States' => 'birth_country = \'USA\'',
+      '40+ WAR Career' => 'bwar_career >= 40'
+    }.freeze
+  end
+
   # Convenience methods for accessing lookups
   def team_lookup
     DataLookupHelper.team_lookup
@@ -82,5 +93,9 @@ module DataLookupHelper
 
   def position_lookup
     DataLookupHelper.position_lookup
+  end
+
+  def player_lookup
+    DataLookupHelper.player_lookup
   end
 end
