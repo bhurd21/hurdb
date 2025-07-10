@@ -50,7 +50,7 @@ class Questions::PlayerPlayerService < Questions::BaseQuestionService
         p.primary_position as position,
         substr(p.debut, 1, 4) || '-' || substr(p.final_game, 1, 4) AS pro_career,
         2025 - p.birth_year AS age,
-        null as lps,
+        ROW_NUMBER() OVER (ORDER BY p.bwar_career IS NULL DESC, p.bwar_career DESC, p.birth_year DESC) as lps,
         p.bbref_id
       FROM player_intersection pi
       LEFT JOIN people p ON p.player_id = pi.player_id
