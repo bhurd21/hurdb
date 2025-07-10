@@ -77,8 +77,7 @@ module DataLookupHelper
       'Canada' => 'birth_country = \'CAN\'',
       'Dominican Republic' => 'birth_country = \'D.R.\'',
       'Puerto Rico' => 'birth_country = \'P.R.\'',
-      'United States' => 'birth_country = \'USA\'',
-      '40+ WAR Career' => 'bwar_career >= 40'
+      'United States' => 'birth_country = \'USA\''
     }.freeze
   end
 
