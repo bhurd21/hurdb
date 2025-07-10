@@ -35,12 +35,13 @@ class Questions::TeamPositionService < Questions::BaseQuestionService
   def build_query(data)
     position_column = data[:position_column]
     team_abbr = data[:team_abbr]
+    team_condition_sql = format_team_condition(team_abbr)
     
     <<~SQL
       WITH initial_condition AS (
         SELECT player_id
         FROM appearances
-        WHERE team_id = '#{team_abbr}'
+        WHERE team_id #{team_condition_sql}
         GROUP BY player_id
         HAVING SUM(#{position_column}) > 0
       )

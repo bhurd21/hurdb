@@ -23,11 +23,16 @@ class Questions::TeamTeamService < Questions::BaseQuestionService
     team1 = data[:team1]
     team2 = data[:team2]
     
+    # Build target teams CTE to handle both single values and arrays
+    team1_values = team1.is_a?(Array) ? team1 : [team1]
+    team2_values = team2.is_a?(Array) ? team2 : [team2]
+    all_teams = (team1_values + team2_values).uniq
+    
+    target_teams_sql = all_teams.map { |team| "SELECT '#{team}' AS team_id" }.join("\nUNION ALL\n")
+    
     <<~SQL
       WITH target_teams AS (
-          SELECT '#{team1}' AS team_id
-          UNION ALL 
-          SELECT '#{team2}' AS team_id
+          #{target_teams_sql}
       ),
       players_both_teams AS (
           SELECT a.player_id

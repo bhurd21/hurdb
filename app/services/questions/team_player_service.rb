@@ -30,15 +30,16 @@ class Questions::TeamPlayerService < Questions::BaseQuestionService
   end
 
   def build_query(data)
+    team_condition_sql = format_team_condition(data[:team_abbr])
     <<~SQL
       WITH team_condition AS (
           SELECT DISTINCT player_id
           FROM battings
-          WHERE team_id = '#{data[:team_abbr]}'
+          WHERE team_id #{team_condition_sql}
           UNION
           SELECT DISTINCT player_id
           FROM pitchings
-          WHERE team_id = '#{data[:team_abbr]}'
+          WHERE team_id #{team_condition_sql}
       ),
       player_condition AS (
           SELECT DISTINCT player_id

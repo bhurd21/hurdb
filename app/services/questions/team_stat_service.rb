@@ -50,11 +50,12 @@ class Questions::TeamStatService < Questions::BaseQuestionService
   end
 
   def build_season_query(table_name, team_abbr, stat_sql, operator_sql, stat_value)
+    team_condition_sql = format_team_condition(team_abbr)
     <<~SQL
       WITH initial_condition AS (
           SELECT DISTINCT player_id
           FROM #{table_name}
-          WHERE team_id = '#{team_abbr}'
+          WHERE team_id #{team_condition_sql}
           GROUP BY player_id, year_id
           HAVING #{stat_sql} #{operator_sql} #{stat_value}
       )
@@ -72,6 +73,7 @@ class Questions::TeamStatService < Questions::BaseQuestionService
   end
 
   def build_career_query(table_name, team_abbr, stat_sql, operator_sql, stat_value)
+    team_condition_sql = format_team_condition(team_abbr)
     <<~SQL
       WITH stat_condition AS (
           SELECT DISTINCT player_id
@@ -82,7 +84,7 @@ class Questions::TeamStatService < Questions::BaseQuestionService
       team_condition AS (
           SELECT DISTINCT player_id
           FROM appearances
-          WHERE team_id = '#{team_abbr}'
+          WHERE team_id #{team_condition_sql}
       )
       SELECT
         CONCAT(p.name_first, ' ', p.name_last) AS name,

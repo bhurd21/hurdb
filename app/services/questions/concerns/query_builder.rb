@@ -16,4 +16,13 @@ module Questions::Concerns::QueryBuilder
     return nil unless conditions.length == 2
     conditions
   end
+
+  def format_team_condition(team_abbr)
+    if team_abbr.is_a?(Array)
+      quoted_values = team_abbr.map { |abbr| "'#{abbr}'" }.join(', ')
+      "IN (#{quoted_values})"
+    else
+      "= '#{team_abbr}'"
+    end
+  end
 end
