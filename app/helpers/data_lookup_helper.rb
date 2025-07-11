@@ -12,6 +12,7 @@ module DataLookupHelper
       "San Diego Padres" =>         "SDN",
       "Pittsburgh Pirates" =>       "PIT",
       "Philadelphia Phillies" =>    "PHI",
+      "Oakland Athletics" =>        "OAK",
       "Athletics" =>                "OAK",
       "New York Yankees" =>         "NYA",
       "New York Mets" =>            "NYN",
