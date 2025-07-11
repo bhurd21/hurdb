@@ -1,6 +1,11 @@
 class Questions::ProcessorService
   # Registry of available question services
   QUESTION_SERVICES = [
+    Questions::AwardAwardService,
+    Questions::AwardTeamService,
+    Questions::AwardStatService,
+    Questions::AwardPositionService,
+    Questions::AwardPlayerService,
     Questions::TeamTeamService,
     Questions::TeamStatService,
     Questions::TeamPositionService,

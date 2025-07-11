@@ -4,6 +4,7 @@ class Questions::BaseQuestionService
   include Questions::Concerns::PositionExtractor
   include Questions::Concerns::PlayerExtractor
   include Questions::Concerns::QueryBuilder
+  include Questions::Concerns::AwardExtractor
 
   def self.call(question)
     new(question).call

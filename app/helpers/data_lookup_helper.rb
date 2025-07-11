@@ -82,6 +82,15 @@ module DataLookupHelper
       'Hall of Fame' => 'hall_of_fame = 1'
     }.freeze
   end
+
+  def self.award_lookup
+    @award_lookup ||= {
+      'Silver Slugger' => 'Silver Slugger',
+      'MVP' => 'Most Valuable Player',
+      'Gold Glove' => 'Gold Glove',
+      'Cy Young' => 'Cy Young Award',
+      'Rookie of the Year' => 'Rookie of the Year',
+      'All Star' => 'All Star'
     }.freeze
   end
 
@@ -100,5 +109,9 @@ module DataLookupHelper
 
   def player_lookup
     DataLookupHelper.player_lookup
+  end
+
+  def award_lookup
+    DataLookupHelper.award_lookup
   end
 end
