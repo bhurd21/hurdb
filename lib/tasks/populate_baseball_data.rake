@@ -601,4 +601,19 @@ namespace :baseball do
     
     puts "Father/son corrections completed"
   end
+
+  desc "Populate hall of fame status for players"
+  task populate_hall_of_fame: :environment do
+    puts "Populating hall of fame status for players..."
+    
+    # Find all players inducted into Hall of Fame by BBWAA
+    hall_of_fame_players = HallOfFame.where(voted_by: 'BBWAA', inducted: 'Y').pluck(:player_id).uniq
+    
+    puts "Found #{hall_of_fame_players.count} Hall of Fame players"
+    
+    # Update people table
+    updated_count = Person.where(player_id: hall_of_fame_players).update_all(hall_of_fame: true)
+    
+    puts "Updated #{updated_count} players with Hall of Fame status"
+  end
 end
