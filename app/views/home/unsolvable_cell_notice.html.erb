@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unsolvable Cell Notice - Utility Man Chrome Extension</title>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #34495e; margin-top: 30px; }
+    h3 { color: #7f8c8d; }
+    strong { color: #2c3e50; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 5px; }
+    a { color: #3498db; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Unsolvable Cell Notice</h1>
+  <p><strong>Last Updated:</strong> July 12, 2025<br>
+  <strong>Extension Version:</strong> 1.1.0</p>
+  <h2>Data Source</h2>
+  <p>The Utility Man extension uses Sean Lahman's baseball <a href="https://sabr.app.box.com/s/rsry2en86bimvybwsorumfsxmf91002a" target="_blank">database</a> to provide solutions for Immaculate Grid puzzles. This database is publicly available and uses Baseball Reference's `playerID` system to identify players, enabling seamless integration with baseball reference websites like immaculategrid.com.</p>
+
+  <h2>Database Limitations</h2>
+  <p>Unfortunately, Sean Lahman's database does not contain all the data needed to solve every Immaculate Grid puzzle condition. The following information is missing from the dataset:</p>
+
+  <ul>
+    <li>Player season or career bWAR (Baseball Reference Wins Above Replacement)</li>
+    <li>Players who have thrown a no-hitter</li>
+    <li>Players who played in the Negro Leagues</li>
+    <li>Players who were drafted in the first round of the amateur draft</li>
+  </ul>
+
+  <h2>Data Integration Requirements</h2>
+  <p>To integrate this missing data into our existing data models, any dataset must include the necessary information to classify players based on these criteria while maintaining a connection to the Baseball Reference `playerID` column.</p>
+
+  <h2>Available Data Sources</h2>
+  <p>The following links provide at least partial datasets for some of the missing conditions, all of which include Baseball Reference `playerID`s:</p>
+  <ul>
+    <li><a href="https://www.baseball-reference.com/leaders/WAR_top_ten.shtml" target="_blank">Season bWAR Leaders</a></li>
+    <li><a href="https://www.baseball-reference.com/leaders/WAR_career.shtml" target="_blank">Career bWAR Leaders</a></li>
+    <li><a href="https://www.baseball-reference.com/friv/no-hitters-and-perfect-games.shtml" target="_blank">No-Hitters and Perfect Games</a></li>
+  </ul>
+  <p>With these data sources, combined with the question conditions already solved using Sean Lahman's database, we can solve approximately 98% of all Immaculate Grid puzzle conditions.</p>
+
+  <h2>Missing Data Sources</h2>
+  <p>Unfortunately, I have not been able to find similar publicly available sources for the following conditions:</p>
+  <ul>
+    <li>Players who played in the Negro Leagues</li>
+    <li>Players who were drafted in the first round of the amateur draft</li>
+  </ul>
+
+  <h2>Help Needed</h2>
+  <p>If you have any leads on where to find this missing information that is both free and publicly available, please reach out. You can find my contact information on the front page of <a href="https://brennanhurd.com" target="_blank">brennanhurd.com</a>.</p>
+</body>
+</html>
