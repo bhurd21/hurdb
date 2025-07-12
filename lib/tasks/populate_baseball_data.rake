@@ -50,6 +50,8 @@ namespace :baseball do
     Rake::Task['baseball:populate_hall_of_fame'].invoke
     Rake::Task['baseball:populate_ws_champs'].invoke
     Rake::Task['baseball:populate_only_one_team'].invoke
+    Rake::Task['baseball:populate_no_hitters'].invoke
+    Rake::Task['baseball:populate_6_war_seasons'].invoke
   end
 
   desc "Populate AllStarFull data from CSV"
@@ -703,9 +705,66 @@ namespace :baseball do
     puts "Updated #{updated_count} players with 'only one team' status"
   end
 
+  desc "Populate no-hitter status for players"
+  task populate_no_hitters: :environment do
+    puts "Populating no-hitter status for players..."
+    
+    csv_file = Rails.root.join('db', 'csv', 'no_hitters_data.csv')
+    
+    unless File.exist?(csv_file)
+      puts "CSV file not found: #{csv_file}"
+      next
+    end
+    
+    # Read player IDs from CSV
+    no_hitter_players = []
+    CSV.foreach(csv_file, headers: true) do |row|
+      no_hitter_players << row['has_no_hitter'] if row['has_no_hitter'].present?
+    end
+    
+    puts "Found #{no_hitter_players.count} no-hitter players"
+    
+    # Update people table
+    updated_count = Person.where(player_id: no_hitter_players).update_all(has_no_hitter: true)
+    
+    puts "Updated #{updated_count} players with no-hitter status"
+  end
+
+  desc "Populate 6+ WAR season status for players"
+  task populate_6_war_seasons: :environment do
+    puts "Populating 6+ WAR season status for players..."
+    
+    csv_file = Rails.root.join('db', 'csv', 'war_leaderboard_data.csv')
+    
+    unless File.exist?(csv_file)
+      puts "CSV file not found: #{csv_file}"
+      next
+    end
+    
+    # Read player IDs who had 6+ WAR seasons
+    six_war_players = []
+    CSV.foreach(csv_file, headers: true) do |row|
+      if row['is_6_war_season'] == 'True' && row['playerID'].present?
+        six_war_players << row['playerID']
+      end
+    end
+    
+    # Get unique players
+    six_war_players = six_war_players.uniq
+    
+    puts "Found #{six_war_players.count} players with 6+ WAR seasons"
+    
+    # Update people table
+    updated_count = Person.where(player_id: six_war_players).update_all(has_6_war_season: true)
+    
+    puts "Updated #{updated_count} players with 6+ WAR season status"
+  end
+
   desc "Populate all new player condition statuses"
   task populate_player_conditions: :environment do
     Rake::Task['baseball:populate_ws_champ'].invoke
     Rake::Task['baseball:populate_only_one_team'].invoke
+    Rake::Task['baseball:populate_no_hitters'].invoke
+    Rake::Task['baseball:populate_6_war_seasons'].invoke
   end
 end

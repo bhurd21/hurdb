@@ -83,7 +83,9 @@ module DataLookupHelper
       'World Series Champ WS Roster' => 'is_ws_champ = 1',
       'Only One Team' => 'matches_only_one_team = 1',
       '40+ WAR Career' => 'bwar_career >= 40',
-      'Hall of Fame' => 'hall_of_fame = 1'
+      'Hall of Fame' => 'hall_of_fame = 1',
+      '6+ WAR Season' => 'has_6_war_season = 1',
+      'Threw a No-Hitter' => 'has_no_hitter = 1'
     }.freeze
   end
 
