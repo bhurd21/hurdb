@@ -7,7 +7,7 @@ class Questions::PositionPositionService < Questions::BaseQuestionService
 
     # Check if both conditions are position conditions
     position_conditions = conditions.select { |c| 
-      c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i) 
+      c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game|Designated\s+Hitter\s+min\.\s+1\s+game)$/i) 
     }
     return { matched: false } unless position_conditions.length == 2
 

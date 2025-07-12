@@ -14,6 +14,11 @@ module Questions::Concerns::PositionExtractor
       return ['Catcher', 'g_c']
     end
     
+    # Handle "Designated Hitter min. 1 game"
+    if position_condition.match?(/^Designated\s+Hitter\s+min\.\s+1\s+game$/i)
+      return ['Designated Hitter', 'g_dh']
+    end
+    
     # Handle "Played {Position} min. 1 game"
     position_match = position_condition.match(/^Played\s+(.+)\s+min\.\s+1\s+game$/i)
     if position_match

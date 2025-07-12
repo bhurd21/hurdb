@@ -7,7 +7,7 @@ class Questions::PositionPlayerService < Questions::BaseQuestionService
 
     # One condition should be position, one should be player
     position_conditions = conditions.select { |c| 
-      c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i) 
+      c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game|Designated\s+Hitter\s+min\.\s+1\s+game)$/i) 
     }
     player_conditions = conditions.select { |c| player_lookup[c] }
     

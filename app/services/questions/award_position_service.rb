@@ -11,7 +11,7 @@ class Questions::AwardPositionService < Questions::BaseQuestionService
 
     # Find position condition
     position_condition = conditions.find { |c| 
-      c != award_condition && c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i) 
+      c != award_condition && c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game|Designated\s+Hitter\s+min\.\s+1\s+game)$/i) 
     }
     return { matched: false } unless position_condition
 
