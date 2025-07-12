@@ -1,11 +1,13 @@
 namespace :test do
-  desc "Test question records from a txt file and output results to CSV with comprehensive logging"
-  # Usage: bundle exec rails "test:test_question_records[path/to/input.txt]"
+  desc "Test question records from a json file and output results to CSV with comprehensive logging"
+  # Usage: bundle exec rails "test:test_question_records[txt/all_grid_questions.json]"
   # 
-  # Input file format (one per line):
-  # ['Cincinnati Reds', 'All Star']
-  # ['Silver Slugger', 'Gold Glove']
-  # ['MVP', 'Chicago Cubs']
+  # Input file format (JSON):
+  # {
+  #   "1": ["Cincinnati Reds + All Star", "Silver Slugger + Gold Glove", ...],
+  #   "2": ["MVP + Chicago Cubs", "40+ WAR Career + 300+ HR Career Batting", ...],
+  #   ...
+  # }
   # 
   # Output: 
   # - questions_historical.csv with test results
@@ -14,16 +16,26 @@ namespace :test do
   # - Rails development.log with integration logs
   task :test_question_records, [:input_file] => :environment do |task, args|
     require 'csv'
+    require 'json'
     
     input_file = args[:input_file]
     unless input_file
-      message = "Usage: rails test:test_question_records[path/to/input.txt]"
+      message = "Usage: rails test:test_question_records[path/to/input.json]"
       puts message
       exit 1
     end
     
     unless File.exist?(input_file)
       message = "Error: File not found: #{input_file}"
+      puts message
+      exit 1
+    end
+    
+    # Parse JSON file
+    begin
+      json_data = JSON.parse(File.read(input_file))
+    rescue JSON::ParserError => e
+      message = "Error: Invalid JSON format in #{input_file}: #{e.message}"
       puts message
       exit 1
     end
@@ -69,91 +81,94 @@ namespace :test do
     puts "=" * 60
     log_message(logger, task_logger, :info, "=" * 60)
     
-    File.readlines(input_file, chomp: true).each_with_index do |line, index|
-      next if line.strip.empty?
+    # Process each object in the JSON
+    json_data.each do |object_id, questions_array|
+      unless questions_array.is_a?(Array)
+        message = "Object #{object_id}: SKIP - Value is not an array"
+        puts message
+        log_message(logger, task_logger, :warn, message)
+        next
+      end
       
-      begin
-        # Parse the array format: ['Cincinnati Reds', 'All Star']
-        # Remove quotes and brackets, split by comma
-        cleaned_line = line.strip.gsub(/[\[\]']/, '').split(',').map(&:strip)
-        
-        if cleaned_line.length != 2
-          message = "Line #{index + 1}: SKIP - Invalid format (expected 2 elements): #{line}"
-          puts message
-          log_message(logger, task_logger, :warn, message)
-          next
-        end
-        
-        # Convert to question format: "Cincinnati Reds + All Star"
-        question = cleaned_line.join(' + ')
-        
-        log_message(logger, task_logger, :info, "Processing line #{index + 1}: #{question}")
-        
-        # Test the question through the processor service
-        result = Questions::ProcessorService.call([question])
-        
-        if result && result.first
-          question_result = result.first
-          suggestions_count = question_result[:suggestions]&.length || 0
-          pattern_type = question_result[:pattern_type]
+      unless questions_array.length == 9
+        message = "Object #{object_id}: SKIP - Array does not contain exactly 9 questions (found #{questions_array.length})"
+        puts message
+        log_message(logger, task_logger, :warn, message)
+        next
+      end
+      
+      log_message(logger, task_logger, :info, "Processing object #{object_id} with #{questions_array.length} questions")
+      
+      questions_array.each_with_index do |question, question_index|
+        begin
+          log_message(logger, task_logger, :info, "Processing object #{object_id}, question #{question_index + 1}: #{question}")
           
-          if pattern_type == "unmatched" || suggestions_count == 0
-            status = "FAIL[0]"
-            failed_tests += 1
-            log_level = :warn
+          # Test the question through the processor service
+          result = Questions::ProcessorService.call([question])
+          
+          if result && result.first
+            question_result = result.first
+            suggestions_count = question_result[:suggestions]&.length || 0
+            pattern_type = question_result[:pattern_type]
+            
+            if pattern_type == "unmatched" || suggestions_count == 0
+              status = "FAIL[0]"
+              failed_tests += 1
+              log_level = :warn
+            else
+              status = "PASS[#{suggestions_count}]"
+              passed_tests += 1
+              log_level = :info
+            end
+            
+            message = "Object #{object_id}, Q#{question_index + 1}: #{status} - #{question} (#{pattern_type})"
+            puts message
+            log_message(logger, task_logger, log_level, message)
+            
+            # Add to results array for CSV
+            results << {
+              object_id: object_id,
+              question_index: question_index + 1,
+              question: question,
+              status: status.include?("PASS") ? "PASS" : "FAIL",
+              suggestions_count: suggestions_count,
+              pattern_type: pattern_type
+            }
           else
-            status = "PASS[#{suggestions_count}]"
-            passed_tests += 1
-            log_level = :info
+            message = "Object #{object_id}, Q#{question_index + 1}: FAIL[0] - #{question} (service error)"
+            puts message
+            log_message(logger, task_logger, :error, message)
+            failed_tests += 1
+            
+            results << {
+              object_id: object_id,
+              question_index: question_index + 1,
+              question: question,
+              status: "FAIL",
+              suggestions_count: 0,
+              pattern_type: "service_error"
+            }
           end
           
-          message = "Line #{index + 1}: #{status} - #{question} (#{pattern_type})"
-          puts message
-          log_message(logger, task_logger, log_level, message)
+          total_tests += 1
           
-          # Add to results array for CSV
-          results << {
-            line_number: index + 1,
-            original_input: line,
-            question: question,
-            status: status.include?("PASS") ? "PASS" : "FAIL",
-            suggestions_count: suggestions_count,
-            pattern_type: pattern_type
-          }
-        else
-          message = "Line #{index + 1}: FAIL[0] - #{question} (service error)"
+        rescue => e
+          message = "Object #{object_id}, Q#{question_index + 1}: ERROR - #{question} (#{e.message})"
           puts message
-          log_message(logger, task_logger, :error, message)
+          log_message(logger, task_logger, :error, "#{message} - Backtrace: #{e.backtrace.first(3).join(', ')}")
           failed_tests += 1
           
           results << {
-            line_number: index + 1,
-            original_input: line,
+            object_id: object_id,
+            question_index: question_index + 1,
             question: question,
-            status: "FAIL",
+            status: "ERROR",
             suggestions_count: 0,
-            pattern_type: "service_error"
+            pattern_type: "parse_error"
           }
+          
+          total_tests += 1
         end
-        
-        total_tests += 1
-        
-      rescue => e
-        message = "Line #{index + 1}: ERROR - #{line} (#{e.message})"
-        puts message
-        log_message(logger, task_logger, :error, "#{message} - Backtrace: #{e.backtrace.first(3).join(', ')}")
-        failed_tests += 1
-        
-        results << {
-          line_number: index + 1,
-          original_input: line,
-          question: "ERROR",
-          status: "ERROR",
-          suggestions_count: 0,
-          pattern_type: "parse_error"
-        }
-        
-        total_tests += 1
       end
     end
     
@@ -162,8 +177,8 @@ namespace :test do
     log_message(logger, task_logger, :info, "Writing results to CSV: #{csv_file}")
     
     CSV.open(csv_file, 'w', write_headers: true, headers: [
-      'Line Number',
-      'Original Input',
+      'Object ID',
+      'Question Index',
       'Question',
       'Status',
       'Suggestions Count',
@@ -171,8 +186,8 @@ namespace :test do
     ]) do |csv|
       results.each do |result|
         csv << [
-          result[:line_number],
-          result[:original_input],
+          result[:object_id],
+          result[:question_index],
           result[:question],
           result[:status],
           result[:suggestions_count],
