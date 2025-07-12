@@ -5,16 +5,19 @@ class Questions::AwardPositionService < Questions::BaseQuestionService
     conditions = split_and_validate_conditions(@question)
     return { matched: false } unless conditions
 
-    # One condition should be award, one should be position
-    award_conditions = conditions.select { |c| award_lookup[c] }
-    position_conditions = conditions.select { |c| position_lookup[c] }
-    
-    return { matched: false } unless award_conditions.length == 1 && position_conditions.length == 1
+    # Find award condition
+    award_condition = conditions.find { |c| award_lookup[c] }
+    return { matched: false } unless award_condition
+
+    # Find position condition
+    position_condition = conditions.find { |c| 
+      c != award_condition && c.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i) 
+    }
+    return { matched: false } unless position_condition
 
     # Extract info for both conditions
-    award_info = extract_award_info(award_conditions[0])
-    position_name = position_conditions[0]
-    position_column = position_lookup[position_name]
+    award_info = extract_award_info(award_condition)
+    position_name, position_column = extract_position_info(position_condition)
     
     return { matched: false } unless award_info && position_column
 
