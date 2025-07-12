@@ -6,7 +6,7 @@ class Questions::StatPlayerService < Questions::BaseQuestionService
     return { matched: false } unless conditions
 
     # One condition should be stat, one should be player
-    stat_conditions = conditions.select { |c| c.match?(/Season|Career/i) }
+    stat_conditions = conditions.select { |c| extract_stat_info(c) }
     player_conditions = conditions.select { |c| player_lookup[c] }
     
     return { matched: false } unless stat_conditions.length == 1 && player_conditions.length == 1

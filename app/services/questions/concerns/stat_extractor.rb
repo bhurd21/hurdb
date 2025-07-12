@@ -10,6 +10,9 @@ module Questions::Concerns::StatExtractor
       return extract_compound_stat_info(compound_match)
     end
 
+    # Skip WAR patterns - let them fall through to player matching
+    return nil if stat_condition.match?(/\bWAR\s+(Season|Career)\b/i)
+
     timeframe = stat_condition[/Season|Career/i]&.capitalize
     return nil unless timeframe
 

@@ -6,7 +6,7 @@ class Questions::StatStatService < Questions::BaseQuestionService
     return { matched: false } unless conditions
 
     # Both conditions should be stat conditions
-    stat_conditions = conditions.select { |c| c.match?(/Season|Career/i) }
+    stat_conditions = conditions.select { |c| extract_stat_info(c) }
     return { matched: false } unless stat_conditions.length == 2
 
     # Extract stat info for both conditions

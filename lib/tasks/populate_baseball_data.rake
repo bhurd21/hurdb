@@ -47,6 +47,9 @@ namespace :baseball do
     Rake::Task['baseball:populate_pitchings'].invoke
     Rake::Task['baseball:populate_teams'].invoke
     Rake::Task['baseball:populate_primary_positions'].invoke
+    Rake::Task['baseball:populate_hall_of_fame'].invoke
+    Rake::Task['baseball:populate_ws_champs'].invoke
+    Rake::Task['baseball:populate_only_one_team'].invoke
   end
 
   desc "Populate AllStarFull data from CSV"
@@ -166,7 +169,7 @@ namespace :baseball do
           birth_state: row['birthState'],
           death_year: row['deathYear'],
           death_month: row['deathMonth'],
-          death_day: row['deathDay'],
+          death_day: row['deathDay']&.to_f,
           death_country: row['deathCountry'],
           death_state: row['deathState'],
           death_city: row['deathCity'],
@@ -615,5 +618,94 @@ namespace :baseball do
     updated_count = Person.where(player_id: hall_of_fame_players).update_all(hall_of_fame: true)
     
     puts "Updated #{updated_count} players with Hall of Fame status"
+  end
+
+  desc "Populate World Series champion status for players"
+  task populate_ws_champs: :environment do
+    puts "Populating World Series champion status for players..."
+    
+    # Find all players who were on World Series winning teams
+    ws_champion_players = ActiveRecord::Base.connection.execute(<<~SQL).map { |row| row['player_id'] }
+      SELECT DISTINCT a.player_id
+      FROM appearances a
+      JOIN teams t ON a.team_id = t.team_id AND a.year_id = t.year_id
+      WHERE t.ws_win = 'Y'
+    SQL
+    
+    puts "Found #{ws_champion_players.count} World Series champion players"
+    
+    # Update people table
+    updated_count = Person.where(player_id: ws_champion_players).update_all(is_ws_champ: true)
+    
+    puts "Updated #{updated_count} players with World Series champion status"
+  end
+
+  desc "Populate World Series champion roster status for players"
+  task populate_ws_champ: :environment do
+    puts "Populating World Series champion roster status for players..."
+    
+    # Find all players who were on World Series winning teams using raw SQL
+    sql = <<~SQL
+      SELECT DISTINCT a.player_id
+      FROM appearances a
+      JOIN teams t ON a.team_id = t.team_id AND a.year_id = t.year_id
+      WHERE t.ws_win = 'Y'
+    SQL
+    
+    results = ActiveRecord::Base.connection.execute(sql)
+    ws_champ_players = results.map { |row| row['player_id'] }
+    
+    puts "Found #{ws_champ_players.count} World Series champion roster players"
+    
+    # Update people table
+    updated_count = Person.where(player_id: ws_champ_players).update_all(is_ws_champ: true)
+    
+    puts "Updated #{updated_count} players with World Series champion status"
+  end
+
+  desc "Populate 'only one team' status for players"
+  task populate_only_one_team: :environment do
+    puts "Populating 'only one team' status for players..."
+    
+    # Complex SQL to find players who played for only one team
+    sql = <<~SQL
+      WITH player_team_counts AS (
+        SELECT 
+          player_id,
+          lg_id,
+          COUNT(DISTINCT team_id) as team_count
+        FROM appearances
+        GROUP BY player_id, lg_id
+      ),
+      player_league_summary AS (
+        SELECT 
+          player_id,
+          SUM(CASE WHEN lg_id = 'AL' AND team_count = 1 THEN 1 ELSE 0 END) as al_one_team,
+          SUM(CASE WHEN lg_id = 'NL' AND team_count = 1 THEN 1 ELSE 0 END) as nl_one_team,
+          SUM(CASE WHEN team_count > 1 THEN 1 ELSE 0 END) as multiple_teams_any_league
+        FROM player_team_counts
+        GROUP BY player_id
+      )
+      SELECT player_id
+      FROM player_league_summary
+      WHERE multiple_teams_any_league = 0  -- Never played for multiple teams in any league
+        AND NOT (al_one_team = 1 AND nl_one_team = 1)  -- Exclude players who played for exactly 1 AL and 1 NL team
+    SQL
+    
+    results = ActiveRecord::Base.connection.execute(sql)
+    only_one_team_players = results.map { |row| row['player_id'] }
+    
+    puts "Found #{only_one_team_players.count} players who played for only one team"
+    
+    # Update people table
+    updated_count = Person.where(player_id: only_one_team_players).update_all(matches_only_one_team: true)
+    
+    puts "Updated #{updated_count} players with 'only one team' status"
+  end
+
+  desc "Populate all new player condition statuses"
+  task populate_player_conditions: :environment do
+    Rake::Task['baseball:populate_ws_champ'].invoke
+    Rake::Task['baseball:populate_only_one_team'].invoke
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_11_023918) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_12_032539) do
   create_table "all_star_fulls", force: :cascade do |t|
     t.string "player_id"
     t.integer "year_id"
@@ -134,6 +134,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_11_023918) do
     t.float "bwar_career"
     t.string "primary_position"
     t.boolean "hall_of_fame", default: false
+    t.boolean "is_ws_champ", default: false
+    t.boolean "matches_only_one_team", default: false
   end
 
   create_table "pitchings", force: :cascade do |t|

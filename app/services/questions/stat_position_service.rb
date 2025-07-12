@@ -29,7 +29,7 @@ class Questions::StatPositionService < Questions::BaseQuestionService
     return { matched: false } unless conditions
 
     # Find stat condition
-    stat_condition = conditions.find { |c| c.match?(/Season|Career/i) }
+    stat_condition = conditions.find { |c| extract_stat_info(c) }
     return { matched: false } unless stat_condition
 
     # Find position condition

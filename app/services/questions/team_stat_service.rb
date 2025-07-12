@@ -6,7 +6,7 @@ class Questions::TeamStatService < Questions::BaseQuestionService
     return { matched: false } unless conditions
 
     team_condition = conditions.find { |c| team_lookup.key?(c) }
-    stat_condition = conditions.find { |c| c.match?(/Season|Career/i) }
+    stat_condition = conditions.find { |c| extract_stat_info(c) }
     return { matched: false } unless team_condition && stat_condition
 
     stat_info = extract_stat_info(stat_condition)

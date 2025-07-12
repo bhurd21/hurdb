@@ -79,6 +79,9 @@ module DataLookupHelper
       'Dominican Republic' => 'birth_country = \'D.R.\'',
       'Puerto Rico' => 'birth_country = \'P.R.\'',
       'United States' => 'birth_country = \'USA\'',
+      'Played Major Leagues' => '1 = 1',
+      'World Series Champ WS Roster' => 'is_ws_champ = 1',
+      'Only One Team' => 'matches_only_one_team = 1',
       '40+ WAR Career' => 'bwar_career >= 40',
       'Hall of Fame' => 'hall_of_fame = 1'
     }.freeze
