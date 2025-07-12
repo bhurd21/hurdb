@@ -66,7 +66,7 @@ conditions.each_with_index do |condition, index|
   end
   
   # Check for position
-  if condition.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i)
+  if condition.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game|Designated\s+Hitter\s+min\.\s+1\s+game)$/i)
     condition_types << "Position"
     puts "  ✅ Position: #{condition}"
   end
@@ -106,7 +106,7 @@ conditions.each do |condition|
     condition_types << "Team"
   elsif DataLookupHelper.player_lookup[condition]
     condition_types << "Player"
-  elsif condition.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game)$/i)
+  elsif condition.match?(/^(Played\s+.+\s+min\.\s+1\s+game|Pitched\s+min\.\s+1\s+game|Caught\s+min\.\s+1\s+game|Designated\s+Hitter\s+min\.\s+1\s+game)$/i)
     condition_types << "Position"
   elsif condition.match?(/Season|Career/i)
     condition_types << "Stat"
