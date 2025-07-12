@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.string "starting_pos"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id"], name: "index_all_star_fulls_on_player_id"
   end
 
   create_table "appearances", force: :cascade do |t|
@@ -48,6 +49,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.float "g_pr"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id", "team_id"], name: "index_appearances_on_player_id_and_team_id"
+    t.index ["player_id"], name: "index_appearances_on_player_id"
+    t.index ["team_id", "year_id"], name: "index_appearances_on_team_id_and_year_id"
+    t.index ["team_id"], name: "index_appearances_on_team_id"
+    t.index ["year_id"], name: "index_appearances_on_year_id"
   end
 
   create_table "awards_players", force: :cascade do |t|
@@ -59,6 +65,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id"], name: "index_awards_players_on_player_id"
   end
 
   create_table "battings", force: :cascade do |t|
@@ -88,6 +95,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.string "g_old"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id"], name: "index_battings_on_player_id"
+    t.index ["team_id"], name: "index_battings_on_team_id"
   end
 
   create_table "hall_of_fames", force: :cascade do |t|
@@ -102,6 +111,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.string "needed_note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id"], name: "index_hall_of_fames_on_player_id"
+    t.index ["voted_by", "inducted"], name: "index_hall_of_fames_on_voted_by_and_inducted"
   end
 
   create_table "people", force: :cascade do |t|
@@ -138,6 +149,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.boolean "matches_only_one_team", default: false
     t.boolean "has_6_war_season", default: false
     t.boolean "has_no_hitter", default: false
+    t.index ["hall_of_fame"], name: "index_people_on_hall_of_fame"
+    t.index ["is_ws_champ"], name: "index_people_on_is_ws_champ"
+    t.index ["matches_only_one_team"], name: "index_people_on_matches_only_one_team"
+    t.index ["player_id"], name: "index_people_on_player_id"
   end
 
   create_table "pitchings", force: :cascade do |t|
@@ -173,6 +188,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.float "gidp"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["player_id"], name: "index_pitchings_on_player_id"
+    t.index ["team_id"], name: "index_pitchings_on_team_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -235,6 +252,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_12_044006) do
     t.string "team_id_retro"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["team_id", "year_id"], name: "index_teams_on_team_id_and_year_id"
+    t.index ["team_id"], name: "index_teams_on_team_id"
+    t.index ["ws_win"], name: "index_teams_on_ws_win"
+    t.index ["year_id"], name: "index_teams_on_year_id"
   end
 
   create_table "users", force: :cascade do |t|
