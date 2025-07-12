@@ -13,7 +13,7 @@ module Questions::Concerns::StatExtractor
     timeframe = stat_condition[/Season|Career/i]&.capitalize
     return nil unless timeframe
 
-    stat_match = stat_condition.match(/\b(?<value>\<?\.?\d+(?:\.\d+)?)(?<op>\+)?\s(?<stat>[A-Za-z]+)\s(Season|Career)\b/i)
+    stat_match = stat_condition.match(/\b(?<value>\<?\.?\d+(?:\.\d+)?)(?<op>\+)?\s(?<stat>[A-Za-z0-9]+)\s(Season|Career)\b/i)
     return nil unless stat_match
     
     value = parse_decimal_value(stat_match[:value], stat_condition)
