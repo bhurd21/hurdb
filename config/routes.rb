@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   
   get 'api/imgrid', to: 'api#imgrid'
+
+  get 'utility_man', to: redirect('https://chromewebstore.google.com/detail/utility-man/odpgppmidhpfpjdkoikeheciidiokomd')
   get 'utility_man/unsolvable_cell_notice', to: 'home#unsolvable_cell_notice'
   get 'utility_man/privacy_policy', to: 'home#privacy_policy'
   get 'utility_man/overview_article', to: 'home#substack_article'
