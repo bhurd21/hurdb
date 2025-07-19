@@ -255,8 +255,8 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
   <p>This sent me down a web scraping rabbit hole. I found two Baseball Reference pages that provided partial solutions:</p>
   <ul>
-    <li><a href="baseball-reference.com/leaders/WAR_career.shtml" target="_blank">WAR_career leaderboard</a></li>
-    <li><a href="baseball-reference.com/leaders/WAR_top_ten.shtml" target="_blank">WAR_top_ten leaderboard</a></li>
+    <li><a href="https://baseball-reference.com/leaders/WAR_career.shtml" target="_blank">WAR_career leaderboard</a></li>
+    <li><a href="https://baseball-reference.com/leaders/WAR_top_ten.shtml" target="_blank">WAR_top_ten leaderboard</a></li>
   </ul>
   
   <p>Rather than try to match seasonal WAR values to existing batting/pitching tables, I opted for Boolean attributes on the People model. Questions like "6+ bWAR season" or "40+ career bWAR" became simple lookups against flags preprocessed from rake tasks. Since neither source is complete on the entire list of all MLB players, we set this Boolean flag to a default of False. This means that not all potential solutions are present for these condition types, but its enough to get started with.</p>
