@@ -17,7 +17,7 @@
       </p>
       <br>
       <p class="hero-description">
-        I love sports.
+        I graduated from Duke University in 2024 with a B.S. in Computer Science and Math. I am currently working for the Washington Nationals front office as a software engineer.
       </p>
     </div>
     <div class="social-links">
@@ -44,6 +44,24 @@
           <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-.904.732-1.636 1.636-1.636h.803L12 9.545l9.561-5.724h.803c.904 0 1.636.732 1.636 1.636z"/>
         </svg>
         Email
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Projects Section -->
+  <div class="projects-section">
+    <h2 class="projects-title">Recent Projects</h2>
+    <div class="projects-list">
+      <%= link_to "/utility_man/overview", class: "project-item-link" do %>
+        <div class="project-item">
+          <h3 class="project-name">Utility Man</h3>
+          <p class="project-description">Chrome extension that automatically solves Immaculate Grid puzzles.</p>
+          <div class="project-links">
+            <%= link_to "Chrome Web Store", "https://chromewebstore.google.com/detail/utility-man/odpgppmidhpfpjdkoikeheciidiokomd", class: "project-link", onclick: "event.stopPropagation()" %>
+            <%= link_to "GitHub Repo", "https://github.com/bhurd21/utility_man", class: "project-link", onclick: "event.stopPropagation()" %>
+            <%= link_to "/utility_man/overview", class: "project-link" do %>Read More<% end %>
+          </div>
+        </div>
       <% end %>
     </div>
   </div>
