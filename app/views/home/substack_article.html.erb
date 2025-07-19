@@ -1,7 +1,16 @@
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const video = document.getElementById("how-to-video");
+    if (video) {
+      video.playbackRate = 1.5; // Set your desired speed here
+    }
+  });
+</script>
+
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Building a Baseball Analytics Tool That Solves 98% of Immaculate Grid Puzzles - Utility Man Chrome Extension</title>
+  <title>Immaculate Grid Puzzle Solver</title>
   <meta charset="utf-8">
   <style>
     body {
@@ -14,7 +23,7 @@
     }
     h1 { 
       color: #2c3e50; 
-      border-bottom: 2px solid #3498db; 
+      border-bottom: 2px solid #2c3e50; 
       padding-bottom: 10px; 
       font-size: 2.2em;
     }
@@ -83,6 +92,7 @@
       color: #7f8c8d;
       font-style: italic;
       margin-bottom: 30px;
+      margin-top: 10px;
       border-bottom: 1px solid #ecf0f1;
       padding-bottom: 15px;
     }
@@ -110,42 +120,46 @@
   </style>
 </head>
 <body>
-  <h1>Building a Baseball Analytics Tool That Solves 98% of Immaculate Grid Puzzles</h1>
+  <h1>Building an Immaculate Grid Puzzle Solver</h1>
   
   <div class="article-meta">
-    <em>A full-stack solution using Rails 8, Chrome extensions, and the Sean Lahman baseball database</em><br>
+    <em>A full-stack solution using Rails 8, Chrome extensions, and the Sean Lahman baseball database</em><br><br>
     July 12, 2025
   </div>
   
-  <hr>
+  <%# <hr> %>
   
-  <p>There's a special kind of embarrassment that comes from loving baseball but being terrible at baseball trivia. Every morning, I'd open Immaculate Grid—the addictive daily baseball puzzle that challenges you to find players who meet two specific criteria simultaneously—and promptly fail at what should be simple questions about the game I'm passionate about.</p>
+  <p>There's a special kind of embarrassment that comes from working in baseball research but being terrible at baseball trivia. I grew up loving the game of baseball, not its history. One game that constantly reminds me just how little baseball history I actually know is Immaculate Grid, a daily baseball trivia game. It swept through our office intern group, becoming a hyper-competitive ritual each morning. I hated it.</p>
+
+  <p>"List a player who won MVP and played for the Reds." These decepively difficult trivia questions would leave my mind blank. I would often resort to looking up answers just to avoid posting a humiliating score. Even with some help, I usually scored around 500 out of a possible 900. For context: in Immaculate Grid, a lower score is better, and the office average was around 100. Brutal.</p>
   
-  <p>"Find a player who won MVP <em>and</em> played for the Reds." Sounds easy, right? Yet there I was, frantically Googling answers, feeling like a fraud despite years of watching games and following stats. The manual lookup process was time-consuming and inefficient. I found myself thinking: "There has to be a better way to do this."</p>
-  
-  <p>Turns out, there was. And it involved building my first personal web application.</p>
+  <p>After enough mornings spent flailing, I figured if I couldn't beat the game with memory, maybe I could with code. So I started mapping this trivia challenge into a software engineering problem, the kind I actually know how to solve.</p>
   
   <h2>The Problem</h2>
   
-  <p>Immaculate Grid is beautifully simple in concept. Each day presents a 3×3 grid where the intersection of any row and column creates a unique question. The top might show teams (Yankees, Red Sox, Played 1B min 1. game), the left side might show achievements (MVP, Cy Young, Cubs), and your job is to find one player per cell that matches both conditions.</p>
+  <p>Immaculate Grid is beautifully simple in concept. Each day presents a 3×3 grid where the intersection of any row and column creates a unique question. For example, the first Immaculate Grid puzzle ever created (hint: click the image) is shown below. To complete the middle cell, you would need to provide a player who played at least one game for the Boston Red Sox and is also in the Hall of Fame.</p>
+      
+  <div style="text-align: center; margin: 20px 0;">
+    <a href="https://www.immaculategrid.com/grid-1" target="_blank"><%= image_tag "immaculate_grid_puzzle_example.png", alt: "Immaculate Grid Puzzle Example", style: "width: 60%; height: auto;" %></a>
+  </div>
+
+  <p>Accuracy is only part of the score calculation. Correct answers contribute to a "rarity" score, calculated as the percentage of players who chose the same answer as you. An incorrect answer automatically results in a 100% rarity score. Your total score is the sum of all your individual percentages, with a minimum score of 0 and a maximum score of 900.</p>
+
+  <p>What frustrated me wasn't just my poor performance, but also the inefficiency of the process required to find valid answers. I'd end up with a browser full of tabs, cross-referencing Baseball Reference pages, team rosters, and award histories. For someone who had been working in baseball operations and data engineering, this felt like exactly the kind of problem that should be solvable with code.</p>
   
-  <p>What frustrated me wasn't just my poor performance, but the inefficiency of the process. I'd end up with 15 browser tabs open, cross-referencing Baseball Reference pages, team rosters, and award histories. For someone who'd been working in baseball operations and data engineering, this felt like exactly the kind of problem that should be solvable with code.</p>
+  <h2>The Foundation</h2>
   
-  <h2>The Foundation: Discovering Gold in the Lahman Database</h2>
+  <p>The inspiration struck me during a flashback to an introductory data analysis course where I had worked with Sean Lahman's baseball database. At the time, I had been impressed by one seemingly minor detail: the database included Baseball Reference player IDs. These IDs create direct links to players in the most comprehensive baseball statistics site on the internet: <a href="https://www.baseball-reference.com" target="_blank">https://www.baseball-reference.com</a>.</p>
   
-  <p>The inspiration struck me during a flashback to an introductory data analysis course where I'd worked with Sean Lahman's baseball database. At the time, I'd been impressed by one seemingly minor detail: the database included Baseball Reference player IDs. This wasn't just any identifier—these IDs create direct links to the most comprehensive baseball statistics site on the internet.</p>
+  <p>I didn't know what those IDs would be useful for back then, but they became the secret sauce that made this entire project possible. Generating unique player identifiers is a non-trivial task when you're dealing with names like "Bob Miller" (there have been multiple major leaguers with that exact name). Having this foundation already built meant I could focus on the fun parts, since manual player mapping is not at all fun.</p>
   
-  <p>I didn't know what those IDs would be useful for back then, but they became the secret sauce that made this entire project possible. Generating unique player identifiers is a non-trivial task when you're dealing with names like "Mike Johnson" (there have been multiple major leaguers with that exact name). Having this foundation already built meant I could focus on the fun parts: queries and user experience.</p>
+  <p>The database's structure was perfect for this use case. It contained decades of player statistics, team affiliations, awards, and biographical information. Essentially, it had everything needed to answer Immaculate Grid questions. Better yet, it was both free and open source.</p>
   
-  <p>The database's structure was perfect for this use case. It contained decades of player statistics, team affiliations, awards, and biographical information—essentially everything needed to answer Immaculate Grid questions. Better yet, it is both public and free.</p>
+  <h2>Initial Rails Backend Work</h2>
   
-  <h2>Building the Rails Backend: From Zero to Production</h2>
+  <p>While I was familiar with Rails from work, I had never built something from scratch for myself. I started with the standard Rails 8.0 generator, embracing all the modern conveniences: built in authentication, Solid Cache for performance, and SQLite for simplicity.</p>
   
-  <p>This became my first personal web application project. While I was familiar with Rails from work, I'd never built something from scratch for myself. I started with the standard Rails 8.0 generator, embracing all the modern conveniences: built-in authentication (simpler than Devise for a personal project), Solid Cache for performance, and SQLite for simplicity.</p>
-  
-  <p>The initial implementation was modest—a simple root route serving as an "About Me" page with links to social media. But the real work began when I started mapping Immaculate Grid's question types to database queries.</p>
-  
-  <p>Early on, I noticed that team-to-team conditions were the most common question type. Having just started my internship in baseball operations, I found it straightforward to translate these into SQL queries. A question like "Find players who played for both the Yankees and Red Sox" can be found using a query like below.</p>
+  <p>I had already written some basic SQL queries to answer common Immaculate Grid questions before my development of this new Rails backend began. During the start of my internship in baseball research, I was granted read access to the entire research database. One schema included the 2023 version of the Lahman database, which I used to practice new SQL skills like CTEs and window functions. One of the first queries I created identified players who played for two teams. For example, a question like "Find players who played for both the Yankees and Red Sox" could be answered with a query like the one below.</p>
   
   <pre><code>-- Simplified example of 'New York Yankees + Boston Red Sox'
 WITH target_teams AS (
@@ -154,22 +168,22 @@ WITH target_teams AS (
     SELECT 'BOS' AS team_id
 )
 SELECT a.player_id
-FROM appearances a
+FROM Appearances a
 JOIN target_teams t ON a.team_id = t.team_id
 GROUP BY a.player_id
 HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
-  <p>This foundation could solve approximately 50% of all Immaculate Grid questions. Not bad for a day's work, but the remaining 50% would prove much more challenging.</p>
+  <p>This query template could solve approximately 50% of all Immaculate Grid questions. Not bad for a random query I had written almost a year prior. I created a simple API endpoint to take in the cell conditions (for example, the two teams in question) and return a list of Baseball Reference player IDs. It wasn't much, but it was something to build upon.</p>
   
-  <h2>Deployment Adventures: Getting Rails to Production</h2>
+  <h2>Deploying the Rails Backend</h2>
   
-  <p>Moving from localhost to production was a learning experience in itself. I'd worked a small amount with AWS through my job and have one AWS cert, so following the Rails documentation to deploy via Kamal to a free-tier EC2 instance felt like the natural path.</p>
+  <p>I had worked a small amount with AWS through my job (including earning one AWS certification), so deploying this project using Kamal to a free tier EC2 instance was relatively painless due to the excellent <a href="https://guides.rubyonrails.org/getting_started.html#deploying-to-production" target="_blank">Rails Getting Started Guides</a>. Before long, my simple endpoint was on the internet.</p>
   
-  <p>The process taught me more about modern Rails deployment than months of reading documentation. Kamal's Docker-based approach, combined with Rails 8's built-in deployment tools, made what used to be a complex process surprisingly straightforward. Even if the project had ended there, I would have considered it valuable learning.</p>
+  <p>However, not everything about the deployment process came as easily. One area I struggled with later in the project was the existence of rake tasks from within my Rails app. Rake tasks are ad hoc scripts that can be run from the command line and are often linked to database processes like setup and migrations. Because of this, it made sense to use rake tasks to transform the Lahman database tables (now called "Rails data models") into more efficient and useful objects. This includes steps like adding indexes and columns with heavy preprocessing steps, such as reading and transforming CSV data.</p>
+
+  <p>While it's trivial to add CSV files to a project locally, understanding where to move the same files in the production server is not so straightforward. Not only are you running on a remote server, but the app itself is running within a Docker container. While I had options to utilize Docker volumes and Docker specific scp tools, I instead just bundled all required CSV files into the Docker image. This was the most straightforward approach, and given that the entire size of all required CSV files is less than 30MB, I found this to work for me. As the CSV file list expands or the size of the image becomes unwieldy, we may need to reevaluate this decision.</p>
   
-  <p>Rake tasks became essential for populating the Lahman database tables into SQLite in production. This preprocessing step transformed raw baseball data into queryable models, setting the stage for the real complexity to come.</p>
-  
-  <h2>The Architecture Challenge: 15 Services for 15 Question Types</h2>
+  <h2>Designing the API</h2>
   
   <p>As I expanded beyond team-to-team queries, I realized I was building something more ambitious than a simple lookup tool. Immaculate Grid uses five main condition types:</p>
   
@@ -181,11 +195,11 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
     <li><strong>Player</strong> (Hall of Fame, Born Outside US 50 States and DC)</li>
   </ul>
   
-  <p>Since any condition can cross with any other condition (including itself), this creates 15 unique question patterns. I faced a choice: build one monolithic service to handle all combinations, or create 15 specialized services following the Single Responsibility Principle.</p>
+  <p>Since any condition can cross with any other condition (including itself), this creates 15 unique question patterns. I faced a choice: build one monolithic service to handle all combinations, or create 15 specialized services to solve their own unique question conditions.</p>
   
-  <p>I chose the latter. Each service became a Plain Old Ruby Object (PORO) in <code>app/services/questions/</code>, handling the specific logic for its combination. <code>TeamStatService</code> handles Yankees + 300 HR. <code>AwardAwardService</code> handles MVP + Gold Glove. And so on.</p>
+  <p>I chose the latter. Each service became a Plain Old Ruby Object (PORO) in <code>app/services/questions/</code>, handling the specific logic for its combination. <code>TeamStatService</code> handles "New York Yankees + 300 HR". <code>AwardAwardService</code> handles "MVP + Gold Glove". And so on.</p>
   
-  <p>This pattern provided clean separation of concerns and made debugging infinitely easier. When a specific question type failed, I knew exactly which service to examine. The player model serves as a catch-all, capable of matching several condition types, which gave me confidence that this architecture could handle any future complexity.</p>
+  <p>This pattern provided clean separation of concerns and made debugging infinitely easier. When a specific question type failed, I knew exactly which service to examine. Given that the number of condition combinations is finite at 15 (knock on wood), this feels like a very defensible position given the benefits.</p>
   
   <h2>Pattern Matching and Query Building</h2>
   
@@ -193,42 +207,46 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
   <ol>
     <li><strong>Match conditions</strong> - Parse the question to identify condition types</li>
-    <li><strong>Build query</strong> - Construct SQL with Common Table Expressions (CTEs)</li>
-    <li><strong>Execute and format</strong> - Return player data with Baseball Reference links</li>
+    <li><strong>Build query</strong> - Construct SQL with Common Table Expressions (CTEs) to identify matches, with service specific logic based on the rules of Immaculate Grid</li>
+    <li><strong>Execute and format</strong> - Return formatted player data, including Baseball Reference links and biographical information</li>
   </ol>
+
+  <p>The matching process involved one of two approaches. The simple approach is to use a lookup against a preprocessed dictonary of condition values. For example, when we are trying to match to a team like the "New York Yankees", we look up the team name in the keys of a lookup dictionary, with the value being their corresponding Baseball Reference IDs. This is fast and efficient, but not always possible. The other approach is to use regex pattern matching to identify condition types. The "Stat" condition type is a good example of this. It doesn't make sense to list each possible stat condition in a dictionary (like "300+ HR Career", "275+ HR Career", etc.). Instead, we can use a regex pattern to identify the stat type and value. For example, the regex <code>/(\d+)\+\s([A-Z]+)\s(Career|Season)/</code> will match "300+ HR Career" and return the value 300, the stat type HR, and the condition type Career.</p>
+
+  <p>Once the inputs have been matched and the relevant data has been extracted, the next step is to build the SQL query. The most common query type are two independent queries that find their own results and then intersect those results to find the players that match both conditions. For example, to find players who played first base and also won a silver slugger award, we would write two queries, one to find all first basemen, and another to find all silver slugger winners. If a player was in both sets, they would be returned. This happens in nearly every service type that does not include a "Team" condition. The makers of Immaculate Grid gave additional conditions on this question type. If we had the question "Boston Red Sox + 20+ HR Season", not only would you have to find players that match each condition, but the stat had to have been achieved while rostered on that team. This slightly complicates the queries, but in general the complexity is handled locally within each service.</p>
   
-  <p>The <code>TeamStatService</code> exemplifies this approach. It uses pattern matching to identify statistical thresholds:</p>
+  <p>Finally, we have query execution and formatting. Query execution is straightforward using the Rails built in SQLite database. The connections and configurations are pre-built for you, resulting in a smooth and painless querying process. Coming from a background in data engineering, this is not something I have taken for granted. The formatting of this data happens mostly in the sql queries themselves. We add attributes to each returned player ID, like their names and ages and length of career. A common ending to many of the queries in the question services look like the example below.</p>
+
+  <pre><code>
+    WITH matched_conditions AS (
+        -- Logic to find matching players ...
+    )
+    SELECT
+        CONCAT(p.name_first, ' ', p.name_last) AS name,
+        p.primary_position AS position,
+        SUBSTR(p.debut, 1, 4) || '-' || SUBSTR(p.final_game, 1, 4) AS pro_career,
+        2025 - p.birth_year AS age,
+        ROW_NUMBER() as lps,
+        p.bbref_id
+    FROM matched_conditions mc
+    LEFT JOIN people p ON p.player_id = mc.player_id
+    ORDER BY p.bwar_career IS NULL DESC, p.bwar_career DESC, age DESC;
+  </code></pre>
+
+  <h2>Chrome Extension Development</h2>
   
-  <ul>
-    <li>Career batting stats (HR, H, RBI with specific thresholds)</li>
-    <li>Career pitching stats (W, SO, ERA achievements)</li>
-    <li>Season-based accomplishments</li>
-    <li>Rate statistics</li>
-  </ul>
+  <p>With a working Rails API, I needed a way for users to actually benefit from this system. Developing a Chrome extension was appealing since it could add DOM elements directly to the Immaculate Grid website HTML without requiring users to leave the page. It also had the added benefit of being free and simple for potential users to access.</p>
   
-  <p>These patterns are more comprehensive and resilient to change (like unseen 60+ HR Season Batting) than simple dictionary lookups, allowing the system to handle variations in how stat questions are phrased while maintaining accuracy.</p>
+  <p>Our extension blends right into the site: on page load, its content scripts scan the HTML to pick out all nine question IDs, bundle them into a GET request, and fetch the answers from our API. When you click a grid cell, the script spots the site's search modal opening, injects a compact UI panel under the search bar, and populates it with a neatly formatted table populated from the response of the previously sent GET request. All components, from the popup to the service worker and content scripts, stay in sync using the Chrome extension API's internal messaging layer, making the whole experience smooth and responsive.</p>
   
-  <p>These patterns feed into a query builder that constructs complex SQL to:</p>
-  <ol>
-    <li>Identify players meeting the statistical threshold</li>
-    <li>Join with team affiliation data</li>
-    <li>Find the intersection of both conditions</li>
-    <li>Return ranked results with metadata</li>
-  </ol>
-  
-  <p>The output includes player names, positions, career spans, and most importantly, Baseball Reference IDs for direct linking.</p>
-  
-  <h2>Chrome Extension: From API to User Interface</h2>
-  
-  <p>With a working Rails API, I needed a way for users to actually benefit from this system. Developing a Chrome extension was appealing since it could add dom elements directly to the Immaculate Grid website html without requiring users to leave their workflow.</p>
-  
-  <p>The user experience is designed for seamless integration. When a user clicks a grid cell on the website, the extension's content script detects the action. As the site's search modal opens, the extension injects a custom UI element below the search bar. This element displays a formatted table of potential answers. The UI includes a toggle to hide or show solutions, respecting user preferences and keeping users in control.</p>
+  <%# <p>The user experience is designed for seamless integration. On page load, the extension parses the page's HTML structure to identify question identifiers embedded within the DOM. It then aggregates the nine questions and sends them as part of a GET request payload to the API. When a user interacts with a grid cell on the website, the extension's content script captures the event and monitors the site's search modal. As the modal opens, the extension dynamically injects a custom UI component beneath the search bar. This component renders a formatted table based on the API's response, complete with a toggle to show or hide solutions. This design respects user preferences, providing an experience that is both customizable and intuitive.</p>
+
+  <p>From a technical perspective, the extension leverages Chrome's Manifest V3 for its architecture and permissions. Content scripts manipulate the DOM to integrate seamlessly with the page, while a background service worker listens for navigation events using the <code>chrome.tabs.onUpdated</code> API. Persistent user preferences are stored via the <code>chrome.storage</code> API, and the messaging API facilitates communication between the popup, service worker, and content scripts, creating a cohesive %>
+  <%# <p>The user experience is designed for seamless integration. On page load, the extension reads through the pages HTML to find question identifiers. It then compiles the nine questions and sends them in the body of a GET request to the API. When a user clicks a grid cell on the website, the extension's content script detects the action. As the site's search modal opens, the extension injects a custom UI element below the search bar. This element displays a formatted table based on the response of the aforementioned GET request. The UI includes a toggle to hide or show solutions, respecting user preferences and keeping users in control.</p>
   
   <p>Technically, the extension uses Manifest V3 for its core structure and permissions. Content scripts inject JavaScript that interacts with the page's DOM. A background service worker uses the <code>chrome.tabs.onUpdated</code> event to detect navigation. The <code>chrome.storage</code> API saves user preferences persistently. The messaging API facilitates communication between the popup, service worker, and content scripts for a cohesive experience.</p>
-  
-  <p>Much of this development happened with AI assistance. I found Chrome extension development to be a perfect use case for AI tooling—the iteration cycle is fast, testing is straightforward, and while the first attempt might not be perfect, it typically provides a solid foundation to build upon.</p>
-  
-  <p>The extension evolved from a simple result viewer to a full-fledged injection tool with features like auto-hiding solutions, light/dark mode support, and clickable links that autofill the search bar.</p>
+     %>
+  <p>The extension evolved from a simple result viewer to a full fledged injection tool with features like auto hiding solutions, light/dark mode support, and clickable links that autofill the search bar.</p>
   
   <h2>The Data Completeness Problem</h2>
   
@@ -236,17 +254,17 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
   <p>This sent me down a web scraping rabbit hole. I found two Baseball Reference pages that provided partial solutions:</p>
   <ul>
-    <li>Career WAR: Top 1000 career bWAR values (baseball-reference.com/leaders/WAR_career.shtml)</li>
-    <li>Season WAR: Top 10 season bWAR values per year (baseball-reference.com/leaders/WAR_top_ten.shtml)</li>
+    <li><a href="baseball-reference.com/leaders/WAR_career.shtml" target="_blank">WAR_career leaderboard</a></li>
+    <li><a href="baseball-reference.com/leaders/WAR_top_ten.shtml" target="_blank">WAR_top_ten leaderboard</a></li>
   </ul>
   
-  <p>Rather than try to match seasonal WAR values to existing batting/pitching tables, I opted for Boolean attributes on the people model. Questions like "6+ bWAR season" or "40+ career bWAR" became simple lookups against preprocessed flags.</p>
+  <p>Rather than try to match seasonal WAR values to existing batting/pitching tables, I opted for Boolean attributes on the People model. Questions like "6+ bWAR season" or "40+ career bWAR" became simple lookups against flags preprocessed from rake tasks. Since neither source is complete on the entire list of all MLB players, we set this Boolean flag to a default of False. This means that not all potential solutions are present for these condition types, but its enough to get started with.</p>
   
-  <p>This pattern extended to other "leftover" conditions: Hall of Fame status, World Series championships, single-team careers, and no-hitter achievements. Rake tasks handled all the preprocessing, transforming complex historical lookups into fast Boolean checks.</p>
+  <p>This pattern extended to other missing conditions, albeit with complete data sets: players in the Hall of Fame, World Series champions, players with careers on only one team, pitchers with no hitters. Rake tasks handled all the preprocessing, transforming complex historical lookups into fast Boolean checks on the People data model.</p>
   
   <h2>The Debugging Marathon: From 88% to 98%</h2>
   
-  <p>Once I had scraped all historical Immaculate Grid puzzles a single time, I could test my system comprehensively. The initial accuracy was encouraging at 88%.</p>
+  <p>Once I had scraped the content from all historical Immaculate Grid puzzles, I could run my API service through a comprehensive testing suite. The initial accuracy was encouraging at 88% of all historical questions asked. A question passes if the endpoint returns a non empty response.</p>
   
   <p>The debugging process took three days. I wrote exhaustive tests for all 15 service combinations, tracking exactly which patterns failed and why. The test suite became a diagnostic tool:</p>
   
@@ -267,26 +285,26 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   <p>The remaining 2% of failures taught me about the messiness of real-world data. Some issues stem from the complexity of baseball itself:</p>
   
   <ul>
-    <li><strong>Franchise vs. Team ID problems</strong>: Questions about the Miami Marlins or Washington Nationals sometimes fail due to how franchise relocations are handled in the database</li>
-    <li><strong>Data availability limits</strong>: Conditions like "Played in Negro Lgs" or "First round draft pick" simply aren't in the Lahman database and have no publicly available records with baseball references 'playerID' column values.</li>
-    <li><strong>Edge case definitions</strong>: What exactly constitutes a "rookie season" when a player had brief appearances in previous years?</li>
+    <li><strong>Franchise vs. Team ID problems</strong>: Questions about the Miami Marlins or Washington Nationals sometimes fail due to how franchise relocations are handled in the database.</li>
+    <li><strong>Data availability limits</strong>: Conditions like "Played in Negro Leagues" or "First round draft pick" simply aren't in the Lahman database and have no publicly available records with Baseball Reference "playerID" column values.</li>
   </ul>
   
-  <p>Rather than chase perfect accuracy, I accepted that 98% represents the practical limit given the available data sources. The remaining failures are well-documented and often reflect the inherent ambiguity in baseball history. Future improvements will focus on expanding data sources to capture these edge cases, though some conditions may remain unmappable due to data availability constraints.</p>
+  <p>Rather than chase perfect accuracy, I accepted that 98% represents the practical limit given the available data sources. The remaining failures are well-documented and reflect the inherent ambiguity in baseball history. Future improvements will focus on expanding data sources to capture these edge cases, though some conditions may remain unmappable due to data availability constraints.</p>
   
   <h2>Performance and Caching</h2>
   
-  <p>The final production system includes comprehensive caching for all 832 historical Immaculate Grid puzzles. With a maximum of 100 players per question and average responses of 450-600 players per puzzle, storing these as JSON files is manageable even on a small EC2 instance.</p>
+  <p>The final production system includes comprehensive caching for all 832 historical Immaculate Grid puzzles. With a maximum of 100 players per question and average responses of 450 to 600 players per puzzle, storing these as JSON files is manageable even on a small EC2 instance.</p>
   
   <p>The cache expires after 30 days, with Kamal mechanisms to reset it easily during deployments. This approach means most queries return instantly, making the Chrome extension feel responsive even when processing complex multi-table joins.</p>
   
-  <h2>Lessons Learned:</h2>
+
+  <h2>Lessons Learned</h2>
   
-  <p>This project taught me a ton about full-stack development. Key takeaways:</p>
+  <p>This project taught me a tremendous amount about full stack development. Key takeaways:</p>
   
-  <p><strong>Start Simple, Then Expand</strong>: Beginning with team-to-team queries gave me a working foundation to build upon. Perfect is the enemy of good, especially in personal projects.</p>
+  <p><strong>Start Simple, Then Expand</strong>: Beginning with team to team queries gave me a working foundation to build upon. Perfect is the enemy of good, especially in personal projects.</p>
   
-  <p><strong>Architecture Matters</strong>: The 15-service approach felt over-engineered at first, but it made debugging and feature addition much easier. When you're building alone, code organization is your future self's best friend.</p>
+  <p><strong>Architecture Matters</strong>: The 15 service approach felt over engineered at first, but it made debugging and feature addition much easier. When you're building alone, code organization is your future self's best friend.</p>
   
   <p><strong>Data Quality Is Hard</strong>: The jump from 88% to 98% accuracy required more work than getting to 88% in the first place. Debugging is key.</p>
   
@@ -294,12 +312,15 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
   <p><strong>Personal Projects Have Different Standards</strong>: Unlike work projects, I could make opinionated choices about scope, technology, and features. This freedom accelerated development and made the work more enjoyable.</p>
   
-  <h2>Beyond the Grid: What's Next?</h2>
-  
-  <p>Today, the system successfully handles 98% of Immaculate Grid questions, with comprehensive caching and a polished user interface. While I could expand it further—tracking answer popularity, building comprehensive databases of solutions, adding custom sorting options—I'm satisfied with its current state.</p>
-  
-  <p>The real value wasn't in reaching 100% accuracy or perfect feature completeness. It was in the learning process: deploying Rails to production, building Chrome extensions, architecting services, and debugging complex systems.</p>
-  
-  <p>Now when that daily puzzle appears, instead of frantically Googling answers, I click once and watch as years of baseball history unfold in a neat, searchable table. I'm finally getting those answers right.</p>
+  <h2>The Solution</h2>
+
+  <p>This system now resolves 98 percent of Immaculate Grid puzzles with near instant responses, thanks to comprehensive caching, clear service separation, and a user interface that blends seamlessly into the immaculate grid web page. Future enhancements might include collecting the remaining 2% of missing data, building an archive of completed puzzles for rarity score analysis or offering personalized sorting and filtering options. For now, the current solution delivers on my core objectives.</p>
+
+  <p>I now possess the ultimate Swiss Army chainsaw for conquering the daily immaculate grid puzzle. Before gaining instant access to this table of solutions, I often struggled to achieve 7 out of 9 correct guesses. Now, my concern is achieving a rarity score of less than 7. It's available within a two click install on any computer running Chrome. Like a good Utility Man, it's always there when you need it. <%= link_to "Install from Chrome here.", "/utility_man" %></p>
+  <br>
+  <div style="text-align: center; margin: 20px 0;">
+    <%= video_tag "article_how_to.mov", id:"how-to-video", controls: true, style: "width: 80%; height: auto;", preload: "metadata" %>
+  </div>
+
 </body>
 </html>
