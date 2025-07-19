@@ -149,7 +149,7 @@
   
   <h2>The Foundation</h2>
   
-  <p>The inspiration struck me during a flashback to an introductory data analysis course where I had worked with Sean Lahman's baseball database. At the time, I had been impressed by one seemingly minor detail: the database included Baseball Reference player IDs. These IDs create direct links to players in the most comprehensive baseball statistics site on the internet: <a href="https://www.baseball-reference.com" target="_blank">https://www.baseball-reference.com</a>.</p>
+  <p>The inspiration struck me during a flashback to an introductory data analysis course where I had worked with Sean Lahman's baseball database. At the time, I had been impressed by one seemingly minor detail: the database included Baseball Reference player IDs. These IDs create direct links to players in the most comprehensive baseball statistics site on the internet: <a href="https://www.baseball-reference.com" target="_blank">baseball-reference.com</a>.</p>
   
   <p>I didn't know what those IDs would be useful for back then, but they became the secret sauce that made this entire project possible. Generating unique player identifiers is a non-trivial task when you're dealing with names like "Bob Miller" (there have been multiple major leaguers with that exact name). Having this foundation already built meant I could focus on the fun parts, since manual player mapping is not at all fun.</p>
   
@@ -207,7 +207,7 @@ HAVING COUNT(DISTINCT a.team_id) = 2;</code></pre>
   
   <ol>
     <li><strong>Match conditions</strong> - Parse the question to identify condition types</li>
-    <li><strong>Build query</strong> - Construct SQL with Common Table Expressions (CTEs) to identify matches, with service specific logic based on the rules of Immaculate Grid</li>
+    <li><strong>Build query</strong> - Construct SQL with Common Table Expressions (CTEs) to identify player matches</li>
     <li><strong>Execute and format</strong> - Return formatted player data, including Baseball Reference links and biographical information</li>
   </ol>
 
