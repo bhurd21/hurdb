@@ -14,5 +14,7 @@ class HomeController < ApplicationController
   end
 
   def resume
+    resume_path = Rails.root.join('app', 'assets', 'images', 'resume.pdf')
+    @last_updated = File.mtime(resume_path).strftime("%b %d, %Y") if File.exist?(resume_path)
   end
 end

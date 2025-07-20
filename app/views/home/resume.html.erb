@@ -34,6 +34,12 @@
 <body>
   <h1>Resume</h1>
   
+  <% if @last_updated %>
+    <div style="color: #7f8c8d; font-style: italic; margin-bottom: 20px;">
+      Last updated: <%= @last_updated %>
+    </div>
+  <% end %>
+  
   <div class="pdf-container">
     <embed src="<%= asset_path('resume.pdf') %>#navpanes=0&view=FitH" type="application/pdf" class="pdf-viewer">
   </div>
