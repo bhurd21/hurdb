@@ -63,6 +63,7 @@ body {
 
 .profile-section {
   margin-bottom: 3rem;
+  text-align: left;
 }
 
 .hero-title {
@@ -125,7 +126,7 @@ body {
 
 /* Projects Section */
 .projects-section {
-  margin-top: 3rem;
+  /* margin-top: 3rem; */
   text-align: center;
   max-width: 800px;
 }
@@ -133,7 +134,7 @@ body {
 .projects-title {
   font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
   color: #ffffff;
   text-align: center;
 }
@@ -237,12 +238,12 @@ body {
   }
 
   .projects-section {
-    margin-top: 2rem;
+    /* margin-top: 2rem; */
   }
   
   .projects-title {
     font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+    /* margin-bottom: 1.5rem; */
   }
   
   .project-item {
