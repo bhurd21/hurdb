@@ -1,8 +1,16 @@
 Rails.application.routes.draw do
+  get "bets/index"
   root 'home#index'
 
   resource :session
   resources :passwords, param: :token
+
+  get 'bet', to: 'bets#index'
+  resources :bets, only: [:index, :create] do
+    collection do
+      post :stage_bet
+    end
+  end
   
   get 'api/imgrid', to: 'api#imgrid'
 
