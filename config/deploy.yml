@@ -7,7 +7,7 @@ image: hurdbr/hurdb
 # Deploy to these servers.
 servers:
   web:
-    - 18.117.100.10
+    - 3.148.108.121
   # job:
   #   hosts:
   #     - 192.168.0.1
