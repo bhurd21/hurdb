@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   get 'utility_man/overview', to: 'home#substack_article'
   get 'utility_man/privacy_policy', to: 'home#privacy_policy'
   get 'utility_man/unsolvable_cell_notice', to: 'home#unsolvable_cell_notice'
+  get 'utility_man/screenshots', to: 'home#utility_man_screenshots'
+  get 'fantasy_kings/screenshots', to: 'home#fantasy_kings_screenshots'
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

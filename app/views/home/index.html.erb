@@ -6,18 +6,11 @@
       <h1 class="hero-title">Brennan Hurd</h1>
       <p class="hero-subtitle">Full Stack Developer</p>
       <p class="hero-description">
-        Experienced full stack developer specializing in building data-driven applications for baseball operations.
-      </p>
-      <br>
-      <%# data-tools="Python,SQL,Prefect,DuckDB" %>
-      <%# data-tools="Rails,AWS,Docker" %>
-      <%# data-tools="Vue.js,Hotwire,JavaScript,Tailwind" %>
-      <p class="hero-description">
-        Full stack expertise spans Data Engineering and Backend Systems through Frontend Frameworks to deliver complete, scalable web applications.
+        I graduated from Duke University in 2024 with a B.S. in Computer Science and Math. Throughout my time in Durham, I worked in analytics for both the Durham Bulls and the Duke Field Hockey team.
       </p>
       <br>
       <p class="hero-description">
-        I graduated from Duke University in 2024 with a B.S. in Computer Science and Math. I am currently working for the Washington Nationals front office as a software engineer.
+        I now work as a software engineer in the Washington Nationals' front office. Since joining in June 2024, I've helped to build out a unified analytics platform that gives coaches, scouts, front office staff, and players secure access to the data they need. The skills I've acquired in this time range from data pipeline orchestration to backend api development to front end javascript frameworks.
       </p>
     </div>
     <div class="social-links">
@@ -52,17 +45,28 @@
   <div class="projects-section">
     <h2 class="projects-title">Recent Projects</h2>
     <div class="projects-list">
-      <%= link_to "/utility_man/overview", class: "project-item-link" do %>
+      <div class="project-item-link">
         <div class="project-item">
           <h3 class="project-name">Utility Man</h3>
-          <p class="project-description">Chrome extension that automatically solves Immaculate Grid puzzles.</p>
+          <p class="project-description">A Chrome web extension that automatically solves Immaculate Grid puzzles using data from the Sean Lahman baseball database.</p>
           <div class="project-links">
-            <%= link_to "Chrome Web Store", "https://chromewebstore.google.com/detail/utility-man/odpgppmidhpfpjdkoikeheciidiokomd", class: "project-link", onclick: "event.stopPropagation()" %>
             <%= link_to "GitHub Repo", "https://github.com/bhurd21/utility_man", class: "project-link", onclick: "event.stopPropagation()" %>
-            <%= link_to "/utility_man/overview", class: "project-link" do %>Read More<% end %>
+            <%= link_to "Chrome Web Store", "https://chromewebstore.google.com/detail/utility-man/odpgppmidhpfpjdkoikeheciidiokomd", class: "project-link", onclick: "event.stopPropagation()" %>
+            <%# link_to "Screenshots", utility_man_screenshots_path, class: "project-link" %>
+            <%= link_to "Read More", "/utility_man/overview", class: "project-link" %>
           </div>
         </div>
-      <% end %>
+      </div>
+      <div class="project-item-link">
+        <div class="project-item">
+          <h3 class="project-name">Fantasy Kings</h3>
+          <p class="project-description">A Rails 8 web app that combines fantasy football with sports betting.</p>
+          <div class="project-links">
+            <%= link_to "GitHub Repo", "https://github.com/bhurd21/fantasy-kings", class: "project-link", onclick: "event.stopPropagation()" %>
+            <%# link_to "Screenshots", fantasy_kings_screenshots_path, class: "project-link" %>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
