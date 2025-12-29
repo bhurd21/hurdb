@@ -65,12 +65,10 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole"
 
-
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
   - "hurdb_storage:/rails/storage"
-
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old
@@ -94,8 +92,7 @@ builder:
 # Use a different ssh user than root
 ssh:
   user: ubuntu
-  keys: [ '~/Downloads/web_server_personal.pem' ]
-
+  keys: ["~/web_server_personal.pem"]
 # Use accessory services (secrets come from .kamal/secrets).
 # accessories:
 #   db:
