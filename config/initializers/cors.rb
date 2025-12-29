@@ -1,7 +1,8 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     allowed_origins = [
-      'https://www.immaculategrid.com'
+      'https://www.immaculategrid.com',
+      'https://www.sports-reference.com',
     ]
 
     origins(*allowed_origins)
