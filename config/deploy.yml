@@ -21,8 +21,8 @@ proxy:
   app_port: 3000
   ssl: true
   hosts:
-    - brennanhurd.com
-    - www.brennanhurd.com
+    - brennanhurdgmail.com
+    - www.brennanhurdgmail.com
   ssl_redirect: true
 
 # Credentials for your image host.
