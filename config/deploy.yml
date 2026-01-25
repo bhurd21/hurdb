@@ -7,7 +7,7 @@ image: hurdbr/hurdb
 # Deploy to these servers.
 servers:
   web:
-    - 3.148.108.121
+    - 178.156.216.157
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -91,8 +91,8 @@ builder:
 
 # Use a different ssh user than root
 ssh:
-  user: ubuntu
-  keys: ["~/web_server_personal.pem"]
+  user: root
+
 # Use accessory services (secrets come from .kamal/secrets).
 # accessories:
 #   db:
